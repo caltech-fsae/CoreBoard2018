@@ -1,17 +1,35 @@
 typedef enum
 {
-	WAIT         // waiting for driver start (brake + start button)
-  DRIVE        // normal driving state
-	START_BRAKE  // waiting for driver start (start button)
-	RST_FAULT    // entered resettable fault state
-	NO_RST_FAULT // entered non-resettable fault state
+	WAIT           // waiting for driver start (brake + start button)
+ 	DRIVE          // normal driving state
+	START_BRAKE    // waiting for driver start (start button)
+	RST_FAULT      // entered resettable fault state
+	NO_RST_FAULT   // entered non-resettable fault state
 }StateType;
+
+typedef enum
+{
+	START
+	PEDAL_ACEL         
+	PEDAL_BRAKE_PUSHED  
+	PEDAL_BRAKE_RELEASED 
+	PWR_80  
+	BPPC_RST
+	IMD_NO_RST
+	BSPD_NO_RST
+	APPS_NO_RST
+	BSE_NO_RST
+	BMS_NO_RST 
+}EventType;
 
 typedef struct
 {
-	StateType State;
+	StateType States;
+	EventType Events;
 	void (*func) (void);
 } StateMachineType;
+
+///
 
 StateMachineType StateMachine[] =
 {
@@ -22,6 +40,19 @@ StateMachineType StateMachine[] =
 	{ NO_RST_FAULT, no_rst_fault_loop }
 };
 
+StateType SmState = WAIT;
+
+
+
+
+StateMachineType StateMachine[] =
+{
+	{ WAIT, wait_loop },
+	{ DRIVE, drive_loop },
+	{ START_BRAKE, start_brake_loop },
+	{ RST_FAULT, rst_fault_loop },
+	{ NO_RST_FAULT, no_rst_fault_loop }
+};
 
 StateType SmState = WAIT;
 
