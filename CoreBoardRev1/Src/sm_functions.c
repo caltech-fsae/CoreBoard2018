@@ -6,7 +6,7 @@
  */
 
 
-#include "functions.h"
+#include "sm_functions.h"
 
 void RTDS()
 {

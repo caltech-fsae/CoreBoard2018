@@ -119,7 +119,7 @@ int main(void)
     add_tuple(&sm, WAIT, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: DRIVE
-    add_tuple(&sm, DRIVE, E_START,                DRIVE         &do_nothing);
+    add_tuple(&sm, DRIVE, E_START,                DRIVE,        &do_nothing);
     add_tuple(&sm, DRIVE, E_PEDAL_ACEL,           DRIVE,        &PEDAL_ACEL);
     add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
     add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
@@ -132,7 +132,7 @@ int main(void)
     add_tuple(&sm, DRIVE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: START_BRAKE
-    add_tuple(&sm, START_BRAKE, E_START,                DRIVE         &RTDS);
+    add_tuple(&sm, START_BRAKE, E_START,                DRIVE,        &RTDS);
     add_tuple(&sm, START_BRAKE, E_PEDAL_ACEL,           WAIT,         &send_CAN);
     add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT,         &send_CAN);
     add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
@@ -145,7 +145,7 @@ int main(void)
     add_tuple(&sm, START_BRAKE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: RST_FAULT
-    add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT     &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
     add_tuple(&sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
     add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &do_nothing);
     add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
@@ -159,7 +159,7 @@ int main(void)
 
 
     //STATE: NO_RST_FAULT
-    add_tuple(&sm, NO_RST_FAULT, E_START,                NO_RST_FAULT     &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_START,                NO_RST_FAULT,    &do_nothing);
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_ACEL,           NO_RST_FAULT,    &do_nothing);
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,    &BRAKE_LIGHT_OFF);
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,    &BRAKE_LIGHT_ON);
