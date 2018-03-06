@@ -40,6 +40,8 @@
 #include "stm32f4xx_hal.h"
 #include "can.h"
 #include "gpio.h"
+#include "machine.h"
+#include "sm_functions.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -96,6 +98,78 @@ int main(void)
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
 
+  // to-do: init statemachine
+
+    statemachine sm;
+    make_state_machine(&sm, NUM_STATES, NUM_EVENTS, WAIT);
+
+    // machine, state, event, next_state, function
+
+    //STATE: WAIT
+    add_tuple(&sm, WAIT, E_START,                WAIT,         &do_nothing);
+    add_tuple(&sm, WAIT, E_PEDAL_ACEL,           WAIT,         &do_nothing);
+    add_tuple(&sm, WAIT, E_PEDAL_BRAKE_RELEASED, WAIT,         &PEDAL_BRAKE_RELEASED);
+    add_tuple(&sm, WAIT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
+    add_tuple(&sm, WAIT, E_PWR_80,               WAIT,         &PWR_80);
+    add_tuple(&sm, WAIT, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, WAIT, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
+    add_tuple(&sm, WAIT, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
+    add_tuple(&sm, WAIT, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
+    add_tuple(&sm, WAIT, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
+    add_tuple(&sm, WAIT, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+
+    //STATE: DRIVE
+    add_tuple(&sm, DRIVE, E_START,                DRIVE         &do_nothing);
+    add_tuple(&sm, DRIVE, E_PEDAL_ACEL,           DRIVE,        &PEDAL_ACEL);
+    add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
+    add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
+    add_tuple(&sm, DRIVE, E_PWR_80,               DRIVE,        &PWR_80);
+    add_tuple(&sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, DRIVE, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
+    add_tuple(&sm, DRIVE, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
+    add_tuple(&sm, DRIVE, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
+    add_tuple(&sm, DRIVE, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
+    add_tuple(&sm, DRIVE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+
+    //STATE: START_BRAKE
+    add_tuple(&sm, START_BRAKE, E_START,                DRIVE         &RTDS);
+    add_tuple(&sm, START_BRAKE, E_PEDAL_ACEL,           WAIT,         &send_CAN);
+    add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT,         &send_CAN);
+    add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
+    add_tuple(&sm, START_BRAKE, E_PWR_80,               START_BRAKE,  &PWR_80);
+    add_tuple(&sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, START_BRAKE, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
+    add_tuple(&sm, START_BRAKE, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
+    add_tuple(&sm, START_BRAKE, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
+    add_tuple(&sm, START_BRAKE, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
+    add_tuple(&sm, START_BRAKE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+
+    //STATE: RST_FAULT
+    add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT     &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
+    add_tuple(&sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
+    add_tuple(&sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
+    add_tuple(&sm, RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
+    add_tuple(&sm, RST_FAULT, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
+    add_tuple(&sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
+    add_tuple(&sm, RST_FAULT, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+
+
+    //STATE: NO_RST_FAULT
+    add_tuple(&sm, NO_RST_FAULT, E_START,                NO_RST_FAULT     &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_ACEL,           NO_RST_FAULT,    &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,    &BRAKE_LIGHT_OFF);
+    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,    &BRAKE_LIGHT_ON);
+    add_tuple(&sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,    &PWR_80);
+    add_tuple(&sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,    &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,    &IMD_NO_RST);
+    add_tuple(&sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,    &BSPD_NO_RST);
+    add_tuple(&sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,    &APPS_NO_RST);
+    add_tuple(&sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,    &BSE_NO_RST);
+    add_tuple(&sm, NO_RST_FAULT, E_BMS_FLT,              NO_RST_FAULT,    &BMS_NO_RST);
   /* USER CODE END 2 */
 
   /* Infinite loop */
