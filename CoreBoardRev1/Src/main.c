@@ -51,8 +51,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-int brake_pedal_val = 0;
-int acel_pedal_val = 0;
+int heartbeats[4] = {0, 0, 0, 0}; // bms shutdown mc io
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -183,13 +182,17 @@ int main(void)
     add_tuple(&sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,    &BMS_NO_RST);
   /* USER CODE END 2 */
 
-    // TO DO: set up scheduler
+    Schedule schedule;
+    MakeSchedule(&schedule, 3);
+    AddTask(&schedule, &mainloop, 100);
+    AddTask(&schedule, &get_CAN, 1);
+    AddTask(&schedule, &send_heartbeat, 100);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  // TO DO: runschedule
+	  RunSchedule(&schedule);
 
   /* USER CODE END WHILE */
 
@@ -201,7 +204,7 @@ int main(void)
 
 }
 
-void get_CAN() // this is in the scheduler along with get_GPIO, runs every cycle
+void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 {
 	can_msg_t msg;
 	if(CAN_dequeue_msg(&msg))
@@ -250,14 +253,33 @@ void get_CAN() // this is in the scheduler along with get_GPIO, runs every cycle
 	//       ignore messages from self
 }
 
-void get_GPIO() // this is in the scheduler along with get_CAN, runs every 100 cycles
+void mainloop() // this is in the scheduler along with get_CAN, runs every 100 cycles
 {
+	// increment all elements of heart beat array
+
+    heartbeats[0]--;
+    heartbeats[1]--;
+    heartbeats[2]--;
+    heartbeats[3]--;
+
+    if (heartbeats[0] < 0 || heartbeats[1] < 0 || heartbeats[2] < 0 || heartbeats[3] < 0)
+    {
+    	// run_event w E_NO_RST_FAULT and send_CAN
+    }
+
 	// if FAULT_NR GPIO active
-	//   call run_event w E_NO_RST_FAULT and return
+	//   call run_event w E_NO_RST_FAULT and send_CAN
 	// if FAULT_R GPIO active
-	//   call run_event w/ E_RST_FAULT and return
+	//   call run_event w/ E_RST_FAULT and send_CAN
 	// if START GPIO active
-	//   call run_event w/ E_START and return
+	//   call run_event w/ E_START and send_CAN
+}
+
+void send_heartbeat()
+{
+	can_msg_t can_msg;
+	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_HEARTBEAT), 0);
+	CAN_queue_transmit(&can_msg);
 }
 
 
