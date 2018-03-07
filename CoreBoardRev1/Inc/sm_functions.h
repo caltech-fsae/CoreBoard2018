@@ -20,6 +20,8 @@ void BSPD_NO_RST();
 void APPS_NO_RST();
 void BSE_NO_RST();
 void BMS_NO_RST();
+void RST();
+void NO_RST();
 
 //above functions will use send_CAN
 void send_CAN();

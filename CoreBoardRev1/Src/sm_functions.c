@@ -31,15 +31,18 @@ void PWR_80()
 }
 void BPPC_RST()
 {
-    //
+    // send 0 torque command
+	// send entering reset fault state from bppc
 }
 void IMD_NO_RST()
 {
-    //
+	// send 0 torque command
+    // send entering reset fault state from imd
 }
 void BSPD_NO_RST()
 {
-    //
+	// send 0 torque command
+	// send entering reset fault state from BSPD
 }
 void APPS_NO_RST()
 {
@@ -54,10 +57,25 @@ void BMS_NO_RST()
     //
 }
 
+void RST()
+{
+	//
+}
+void NO_RST()
+{
+	//
+}
+
 void send_CAN()
 {
 	// helper function for all the other functions, also for transitions that do nothing but change state
 	// will send the car state over can
+	// transmit CAN message idiom
+		  /*
+		  msg = 0x00000 // update with appropriate msg, construct from common.h/c
+		  CAN_short_msg(&can_msg, create_ID(0,0), msg);
+		  CAN_queue_transmit(&can_msg);
+		  */
 }
 
 void do_nothing()

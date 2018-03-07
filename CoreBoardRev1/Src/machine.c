@@ -27,4 +27,3 @@ void run_event(statemachine * machine, EventType event)
     machine->table[(machine->current_state) * machine->num_states + event].function();
     machine->current_state = machine->table[(machine->current_state) * machine->num_states + event].next_state;
 }
-

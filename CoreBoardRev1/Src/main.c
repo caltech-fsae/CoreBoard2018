@@ -51,7 +51,8 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+int brake_pedal_val = 0;
+int acel_pedal_val = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,12 +112,14 @@ int main(void)
     add_tuple(&sm, WAIT, E_PEDAL_BRAKE_RELEASED, WAIT,         &PEDAL_BRAKE_RELEASED);
     add_tuple(&sm, WAIT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
     add_tuple(&sm, WAIT, E_PWR_80,               WAIT,         &PWR_80);
+    add_tuple(&sm, WAIT, E_RST_FLT,              RST_FAULT,    &RST);
     add_tuple(&sm, WAIT, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, WAIT, E_NO_RST_FLT,           NO_RST_FAULT, &NO_RST);
     add_tuple(&sm, WAIT, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
     add_tuple(&sm, WAIT, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
     add_tuple(&sm, WAIT, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
     add_tuple(&sm, WAIT, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
-    add_tuple(&sm, WAIT, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+    add_tuple(&sm, WAIT, E_AMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: DRIVE
     add_tuple(&sm, DRIVE, E_START,                DRIVE,        &do_nothing);
@@ -124,12 +127,14 @@ int main(void)
     add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
     add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
     add_tuple(&sm, DRIVE, E_PWR_80,               DRIVE,        &PWR_80);
+    add_tuple(&sm, DRIVE, E_RST_FLT,              RST_FAULT,    &RST);
     add_tuple(&sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, DRIVE, E_NO_RST_FLT,           NO_RST_FAULT, &NO_RST);
     add_tuple(&sm, DRIVE, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
     add_tuple(&sm, DRIVE, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
     add_tuple(&sm, DRIVE, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
     add_tuple(&sm, DRIVE, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
-    add_tuple(&sm, DRIVE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+    add_tuple(&sm, DRIVE, E_AMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: START_BRAKE
     add_tuple(&sm, START_BRAKE, E_START,                DRIVE,        &RTDS);
@@ -137,12 +142,14 @@ int main(void)
     add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT,         &send_CAN);
     add_tuple(&sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
     add_tuple(&sm, START_BRAKE, E_PWR_80,               START_BRAKE,  &PWR_80);
+    add_tuple(&sm, START_BRAKE, E_RST_FLT,              RST_FAULT,    &RST);
     add_tuple(&sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &BPPC_RST);
+    add_tuple(&sm, START_BRAKE, E_NO_RST_FLT,           NO_RST_FAULT, &NO_RST);
     add_tuple(&sm, START_BRAKE, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
     add_tuple(&sm, START_BRAKE, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
     add_tuple(&sm, START_BRAKE, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
     add_tuple(&sm, START_BRAKE, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
-    add_tuple(&sm, START_BRAKE, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+    add_tuple(&sm, START_BRAKE, E_AMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
     //STATE: RST_FAULT
     add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
@@ -150,12 +157,14 @@ int main(void)
     add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &do_nothing);
     add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
     add_tuple(&sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
+    add_tuple(&sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &RST);
     add_tuple(&sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT, &NO_RST);
     add_tuple(&sm, RST_FAULT, E_IMD_FLT,              NO_RST_FAULT, &IMD_NO_RST);
     add_tuple(&sm, RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT, &BSPD_NO_RST);
     add_tuple(&sm, RST_FAULT, E_APPS_FLT,             NO_RST_FAULT, &APPS_NO_RST);
     add_tuple(&sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &BSE_NO_RST);
-    add_tuple(&sm, RST_FAULT, E_BMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
+    add_tuple(&sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &BMS_NO_RST);
 
 
     //STATE: NO_RST_FAULT
@@ -164,35 +173,25 @@ int main(void)
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,    &BRAKE_LIGHT_OFF);
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,    &BRAKE_LIGHT_ON);
     add_tuple(&sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,    &PWR_80);
-    add_tuple(&sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,    &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_RST_FLT,              RST_FAULT,    &RST);
+    add_tuple(&sm, NO_RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
+    add_tuple(&sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT, &NO_RST);
     add_tuple(&sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,    &IMD_NO_RST);
     add_tuple(&sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,    &BSPD_NO_RST);
     add_tuple(&sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,    &APPS_NO_RST);
     add_tuple(&sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,    &BSE_NO_RST);
-    add_tuple(&sm, NO_RST_FAULT, E_BMS_FLT,              NO_RST_FAULT,    &BMS_NO_RST);
+    add_tuple(&sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,    &BMS_NO_RST);
   /* USER CODE END 2 */
+
+    // TO DO: set up scheduler
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  // TO DO: runschedule
 
   /* USER CODE END WHILE */
-
-	  // transmit CAN message idiom
-	  /*
-	  msg = 0x00000 // update with appropriate msg, construct from common.h/c
-	  CAN_short_msg(&can_msg, create_ID(0,0), msg);
-	  CAN_queue_transmit(&can_msg);
-	  */
-  	  // receive CAN message idiom
- 	  /*
-  	  if (CAN_dequeue_msg(&can_msg))
-  	  {
-  	      msg = CAN_decode_short(&can_msg);
-  	  }
-  	  // process msg using common.h/c
-  	  */
 
 
   /* USER CODE BEGIN 3 */
@@ -201,6 +200,66 @@ int main(void)
   /* USER CODE END 3 */
 
 }
+
+void get_CAN() // this is in the scheduler along with get_GPIO, runs every cycle
+{
+	can_msg_t msg;
+	if(CAN_dequeue_msg(&msg))
+	{
+		uint16_t board_id = 0b0000000000001111 & msg.identifier;
+		uint16_t type     = 0b0000011111110000 & msg.identifier;
+
+		switch(board_id) {
+		    case BID_BMS_MASTER:
+		    	return;
+		    case BID_SHUTDOWN:
+		    	if (type == MID_FAULT_STATUS)
+		    	{
+		    		// use comment in identifiers.h to look for battery/interlock/fault_nr/fault_r/IMD/AMS/BSPD faults
+		    		// NOTE: check for IMD/AMS/BSPD first, want to trigger their specific events (E_IMD_FLT, etc) if they occur
+		    		//       battery, interlock, fault_nr should trigger E_NO_RST_FAULT
+		    		//       fault_r should trigger E_NO_RST_FAULT
+		    	}
+		    	return;
+		    case BID_MOTOR_CONTROLLER:
+		    	return;
+		    case BID_IO: // need IO message types to search for acel, brake, or faults (BPPC/BSE/APPS)
+		    	return;
+		    case BID_CORE:
+		    	return;
+		}
+
+	}
+
+	//    switch board_id // use constants in CoreBoardRev1/common_inc/identifiers.h to decode info further and so on
+	//    BID_BMS_MASTER:
+	//    BID_SHUTDOWN:
+	//       look for IMD/AMS/BSPD
+	//       call run_event w appropriate fault event
+	//    BID_MOTOR_CONTROLLER:
+	//       look for current draw, if above 80, call run_event w E_PWR_80
+	//    BID_IO:
+	//       look for brake value, acel value, BPPC/BSE/APPS faults
+	//       if brake value info and brake value changed significantly (compare info with global brake_pedal_val)
+	//           call run_event w brake event (whichever one makes more sense)
+	//       if acel value info and acel value changed significantly (compare info with global acel_pedal_val)
+	//           call run_event w E_ACEL_PEDAL
+	//       if one of the faults
+	//           call run_event w the appropriate fault event
+	//    BID_CORE:
+	//       ignore messages from self
+}
+
+void get_GPIO() // this is in the scheduler along with get_CAN, runs every 100 cycles
+{
+	// if FAULT_NR GPIO active
+	//   call run_event w E_NO_RST_FAULT and return
+	// if FAULT_R GPIO active
+	//   call run_event w/ E_RST_FAULT and return
+	// if START GPIO active
+	//   call run_event w/ E_START and return
+}
+
 
 /**
   * @brief System Clock Configuration
