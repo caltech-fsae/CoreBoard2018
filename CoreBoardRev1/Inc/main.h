@@ -49,6 +49,22 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define RESET_HEARTBEAT 20
+
+#define MAX_CURRENT 80
+
+#define BRAKELIGHT_GPIO_Port GPIOE
+#define RTDS_GPIO_Port       GPIOE
+#define BRAKELIGHT_Pin       GPIO_PIN_1
+#define RTDS_Pin             GPIO_PIN_2
+
+#define START_GPIO_Port      GPIOA
+#define START_Pin            GPIO_PIN_6
+
+#define FLT_NR_GPIO_Port     GPIOB
+#define FLT_GPIO_Port        GPIOB
+#define FLT_NR_Pin           GPIO_PIN_6
+#define FLT_Pin              GPIO_PIN_7
 /* ########################## Assert Selection ############################## */
 /**
   * @brief Uncomment the line below to expanse the "assert_param" macro in the 
@@ -57,6 +73,13 @@
 /* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
+
+void send_CAN();
+void mainloop();
+void send_heartbeat();
+void send_state();
+void get_CAN();
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

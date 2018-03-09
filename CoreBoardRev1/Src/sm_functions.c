@@ -7,6 +7,7 @@
 
 
 #include "sm_functions.h"
+#include "mycan.h"
 
 void RTDS()
 {
@@ -32,40 +33,41 @@ void PWR_80()
 }
 void BPPC_RST()
 {
-	send_FLT_CAN(MID_HANDLE_RST_FLT, BPPC_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, BPPC_FLT);
 }
 void IMD_NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, IMD_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, IMD_FLT);
 }
 void BSPD_NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, BSPD_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, BSPD_FLT);
 }
 void APPS_NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, APPS_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, APPS_FLT);
 }
 void BSE_NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, BSE_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, BSE_FLT);
 
 }
 void BMS_NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, BMS_FLT);
+	sending_FLT_CAN(MID_FAULT_CAUSE, BMS_FLT);
 }
 
 void RST()
 {
-	send_FLT_CAN(MID_HAND_RST_FLT, GENERIC_RST);
+	sending_FLT_CAN(MID_FAULT_CAUSE, GENERIC_RST);
 }
 void NO_RST()
 {
-	send_FLT_CAN(MID_HANDLE_NO_RST_FLT, GENERIC_NO_RST);
+	sending_FLT_CAN(MID_FAULT_CAUSE, GENERIC_NO_RST);
 }
 
-void send_CAN(uint16_t MID, uint16_t message)
+
+void sending_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function for all the other functions, also for transitions that do nothing but change state
 	// will send the car state over can
@@ -75,11 +77,12 @@ void send_CAN(uint16_t MID, uint16_t message)
 	CAN_queue_transmit(&can_msg);
 }
 
-void send_FLT_CAN(uint16_t MID, uint16_t message)
+void sending_FLT_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function to send CAN specifically for faults
-	send_CAN(BID, MID, message);
+	sending_CAN(MID, message);
 
+	// sending 0 torque command
 	can_msg_t can_msg;
 	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_TORQUE_COMMAND), 0);
 	CAN_queue_transmit(&can_msg);

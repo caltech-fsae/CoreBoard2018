@@ -10,12 +10,13 @@
 
 #include <stdlib.h>
 
-#define NUM_STATES 5
-#define NUM_EVENTS 13
+#define NUM_STATES 6
+#define NUM_EVENTS 14
 
 typedef enum
 {
-    WAIT,           // waiting for driver start (brake + start button)
+	WAIT_HEARTBEATS, // waiting for all boards to send a heartbeat
+    WAIT_DRIVER,     // waiting for driver start (brake + start button)
 	DRIVE,          // normal driving state
     START_BRAKE,    // waiting for driver start (start button)
     RST_FAULT,      // entered resettable fault state
@@ -36,7 +37,8 @@ typedef enum
 	E_APPS_FLT,          // APPS asserted non-resettable fault
 	E_BSE_FLT,           // BSE asserted non-resettable fault
 	E_AMS_FLT,            // BMS asserted non-resettable fault
-	E_NO_RST_FLT
+	E_NO_RST_FLT,
+	E_BOARDS_LIVE        // all boards sent a heartbeat
 }EventType;
 
 
