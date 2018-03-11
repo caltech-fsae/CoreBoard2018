@@ -72,9 +72,6 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2|GPIO_PIN_1, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PE2 PE1 */
-  // PE2 is RTDS       (GPIO_PIN_2)
-  // PE1 is BrakeLight (GPIO_PIN_1)
-  // Port GPIOE
   GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -82,17 +79,12 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA6 */
-  // PA6 is Start (GPIO_PIN_6)
-  // Port GPIOA
   GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB6 PB7 */
-  // PB6 is FLT    (GPIO_PIN_6)
-  // PB7 is FLT_NR (GPIO_PIN_7)
-  // Port GPIOB
   GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
