@@ -55,6 +55,7 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 uint16_t throttle_val = 0;
+uint16_t brake_val = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 statemachine sm;
@@ -387,19 +388,24 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_THROTTLE_PRESSED)
 		    	{
-		    		// set variable for sm_functions.c
-		    		throttle_val = message;
-		    		run_event(&sm, E_PEDAL_ACEL);
+		    		throttle_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
+		    		if (brake_val < throttle_val && throttle_val > PRESSED)
+		    		{
+		    			run_event(&sm, E_PEDAL_ACEL);
+		    		}
 		    	}
 		    	else if (type == MID_BRAKE_PRESSED)
 		    	{
-		    		run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    		brake_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
+		    		if (brake_val > PRESSED)
+		    		{
+		    			run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    		}
+		    		else
+		    		{
+		    			run_event(&sm, E_PEDAL_BRAKE_RELEASED);
+		    		}
 		    	}
-		        // else if (type == MID_BRAKE_RELEASED)
-		        // {
-		        //    run_event(&sm, E_PEDAL_BRAKE_RELEASED)
-		        // }
-		    	// need IO message types to search for acel, brake, or faults (BPPC/BSE/APPS)
 		    	return;
 		    case (int) BID_CORE:
 		    	return;
