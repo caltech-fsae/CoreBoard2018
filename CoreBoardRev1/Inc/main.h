@@ -58,22 +58,10 @@
 
 /* USER CODE BEGIN Private defines */
 #define RESET_HEARTBEAT 20
-
 #define MAX_CURRENT 80
 
-#define BRAKELIGHT_GPIO_Port GPIOE
-#define RTDS_GPIO_Port       GPIOE
-#define BRAKELIGHT_Pin       GPIO_PIN_1
-#define RTDS_Pin             GPIO_PIN_2
+#define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
 
-#define START_GPIO_Port      GPIOA
-#define START_Pin            GPIO_PIN_6
-
-#define FLT_NR_GPIO_Port     GPIOB
-#define FLT_GPIO_Port        GPIOB
-#define FLT_NR_Pin           GPIO_PIN_6
-#define FLT_Pin              GPIO_PIN_7
-void send_CAN();
 void mainloop();
 void send_heartbeat();
 void send_state();

@@ -8,66 +8,62 @@
 
 #include "sm_functions.h"
 #include "mycan.h"
+#include "gpio.h"
+
+extern uint16_t throttle_val;
 
 void RTDS()
 {
 	//assert RTDS GPIO active
+	HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_SET);
 }
 // Functions for state transitions. Takes in CAN message and current state. Function names in form of SmState_Event.
 void PEDAL_ACEL()
 {
+	send_CAN(MID_THROTTLE, throttle_val);
+}
 
-    // occurs when acel value changed enough to care
-}
-void PEDAL_BRAKE_PUSHED()
-{
-    // occurs when brake pressed enough to turn on brake light, send CAN
-}
-void PEDAL_BRAKE_RELEASED()
-{
-    // occurs when brake released, light should be turned off, send CAN
-}
 void PWR_80()
 {
-    // occurs when power over 80 kW
+	send_CAN(MID_REDUCE_PWR, 0);
 }
 void BPPC_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, BPPC_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, BPPC_FLT);
 }
 void IMD_NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, IMD_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, IMD_FLT);
 }
 void BSPD_NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, BSPD_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, BSPD_FLT);
 }
 void APPS_NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, APPS_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, APPS_FLT);
 }
 void BSE_NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, BSE_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, BSE_FLT);
 
 }
 void BMS_NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, BMS_FLT);
+	send_FLT_CAN(MID_FAULT_CAUSE, BMS_FLT);
 }
 
 void RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, GENERIC_RST);
+	send_FLT_CAN(MID_FAULT_CAUSE, GENERIC_RST);
 }
 void NO_RST()
 {
-	sending_FLT_CAN(MID_FAULT_CAUSE, GENERIC_NO_RST);
+	send_FLT_CAN(MID_FAULT_CAUSE, GENERIC_NO_RST);
 }
 
 
-void sending_CAN(uint16_t MID, uint16_t message)
+void send_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function for all the other functions, also for transitions that do nothing but change state
 	// will send the car state over can
@@ -77,10 +73,10 @@ void sending_CAN(uint16_t MID, uint16_t message)
 	CAN_queue_transmit(&can_msg);
 }
 
-void sending_FLT_CAN(uint16_t MID, uint16_t message)
+void send_FLT_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function to send CAN specifically for faults
-	sending_CAN(MID, message);
+	send_CAN(MID, message);
 
 	// sending 0 torque command
 	can_msg_t can_msg;
@@ -91,15 +87,20 @@ void sending_FLT_CAN(uint16_t MID, uint16_t message)
 
 void do_nothing()
 {
-    // do nothing
+    return;
 }
 
-void BRAKE_LIGHT_ON()
+void PEDAL_BRAKE_PUSHED()
 {
-	//use to turn on brake light, no CAN
+    // GPIOs
+	// occurs when brake pressed enough to turn on brake light, send CAN
+	HAL_GPIO_WritePin(BRAKELIGHT_GPIO_Port, BRAKELIGHT_Pin, GPIO_PIN_SET);
 }
 
-void BRAKE_LIGHT_OFF()
+void PEDAL_BRAKE_RELEASED()
 {
-	//use to turn off brake light, no CAN
+	// GPIOs
+    // occurs when brake released, light should be turned off, send CAN
+
+	HAL_GPIO_WritePin(BRAKELIGHT_GPIO_Port, BRAKELIGHT_Pin, GPIO_PIN_RESET);
 }

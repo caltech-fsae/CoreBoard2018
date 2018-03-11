@@ -53,7 +53,18 @@
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
+#define BRAKELIGHT_GPIO_Port GPIOE
+#define RTDS_GPIO_Port       GPIOE
+#define BRAKELIGHT_Pin       GPIO_PIN_1
+#define RTDS_Pin             GPIO_PIN_2
 
+#define START_GPIO_Port      GPIOA
+#define START_Pin            GPIO_PIN_6
+
+#define FLT_NR_GPIO_Port     GPIOB
+#define FLT_GPIO_Port        GPIOB
+#define FLT_NR_Pin           GPIO_PIN_6
+#define FLT_Pin              GPIO_PIN_7
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);

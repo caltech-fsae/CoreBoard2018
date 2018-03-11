@@ -38,13 +38,11 @@ static const uint16_t BPPC_FLT        = 0b0000000100000000;
 
 
 
-void sending_CAN(uint16_t, uint16_t);
-void sending_FLT_CAN(uint16_t, uint16_t);
+void send_CAN(uint16_t, uint16_t);
+void send_FLT_CAN(uint16_t, uint16_t);
 
 void RTDS();
 void PEDAL_ACEL();
-void PEDAL_BRAKE_PUSHED();
-void PEDAL_BRAKE_RELEASED();
 void PWR_80();
 void BPPC_RST();
 void IMD_NO_RST();
@@ -59,7 +57,8 @@ void NO_RST();
 //below functions will not use send_CAN
 
 void do_nothing();
-void BRAKE_LIGHT_ON();
-void BRAKE_LIGHT_OFF();
+
+void PEDAL_BRAKE_PUSHED();
+void PEDAL_BRAKE_RELEASED();
 
 #endif /* SM_FUNCTIONS_H_ */

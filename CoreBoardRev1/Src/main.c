@@ -54,6 +54,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+uint16_t throttle_val = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 statemachine sm;
@@ -68,6 +69,13 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance==TIM3) // Reset back high after 100ms
+	{
+		HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -177,7 +185,7 @@ int main(void)
     //STATE: RST_FAULT
     add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
     add_tuple(&sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
-    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &do_nothing);
+    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &PEDAL_BRAKE_RELEASED);
     add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
     add_tuple(&sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
     add_tuple(&sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &RST);
@@ -194,8 +202,8 @@ int main(void)
     //STATE: NO_RST_FAULT
     add_tuple(&sm, NO_RST_FAULT, E_START,                NO_RST_FAULT,  &do_nothing);
     add_tuple(&sm, NO_RST_FAULT, E_PEDAL_ACEL,           NO_RST_FAULT,  &do_nothing);
-    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &BRAKE_LIGHT_OFF);
-    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &BRAKE_LIGHT_ON);
+    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &PEDAL_BRAKE_RELEASED);
+    add_tuple(&sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &PEDAL_BRAKE_PUSHED);
     add_tuple(&sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,  &PWR_80);
     add_tuple(&sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &RST);
     add_tuple(&sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,  &do_nothing);
@@ -320,10 +328,34 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_FAULT_STATUS)
 		    	{
-		    		// use comment in identifiers.h to look for battery/interlock/fault_nr/fault_r/IMD/AMS/BSPD faults
-		    		// NOTE: check for IMD/AMS/BSPD first, want to trigger their specific events (E_IMD_FLT, etc) if they occur
-		    		//       battery, interlock, fault_nr should trigger E_NO_RST_FAULT
-		    		//       fault_r should trigger E_NO_RST_FAULT
+		    		if (CHECK_BIT(message, 6)) // battery fault
+		    		{
+		    			run_event(&sm, E_NO_RST_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 5)) // interlock fault
+		    		{
+		    			run_event(&sm, E_NO_RST_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 3)) // generic nonresettable fault
+		    		{
+		    			run_event(&sm, E_NO_RST_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 1)) // AMS fault
+		    		{
+		    			run_event(&sm, E_AMS_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 2)) // IMD fault
+		    		{
+		    			run_event(&sm, E_IMD_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 0)) // BSPD fault
+		    		{
+		    			run_event(&sm, E_BSPD_FLT);
+		    		}
+		    		else if (CHECK_BIT(message, 4)) // generic resettable fault
+		    		{
+		    			run_event(&sm, E_RST_FLT);
+		    		}
 		    	}
 		    	return;
 		    case (int) BID_MOTOR_CONTROLLER:
@@ -349,6 +381,24 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[3] = RESET_HEARTBEAT;
 		    	}
+		    	else if (type == MID_BPPC_BSPD)
+		    	{
+		    		run_event(&sm, E_BPPC_FLT);
+		    	}
+		    	else if (type == MID_THROTTLE_PRESSED)
+		    	{
+		    		// set variable for sm_functions.c
+		    		throttle_val = message;
+		    		run_event(&sm, E_PEDAL_ACEL);
+		    	}
+		    	else if (type == MID_BRAKE_PRESSED)
+		    	{
+		    		run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    	}
+		        // else if (type == MID_BRAKE_RELEASED)
+		        // {
+		        //    run_event(&sm, E_PEDAL_BRAKE_RELEASED)
+		        // }
 		    	// need IO message types to search for acel, brake, or faults (BPPC/BSE/APPS)
 		    	return;
 		    case (int) BID_CORE:
@@ -378,15 +428,20 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
 
     if (heartbeat_counter[0] <= 0 || heartbeat_counter[1] <= 0 || heartbeat_counter[2] <= 0 || heartbeat_counter[3] <= 0)
     {
-    	// run_event w E_NO_RST_FAULT and send_CAN
+    	run_event(&sm, E_NO_RST_FLT);
     }
-
-	// if FAULT_NR GPIO active
-	//   call run_event w E_NO_RST_FAULT and send_CAN
-	// if FAULT_R GPIO active
-	//   call run_event w/ E_RST_FAULT and send_CAN
-	// if START GPIO active
-	//   call run_event w/ E_START and send_CAN
+    else if (HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
+	{
+		run_event(&sm, E_NO_RST_FLT);
+	}
+	else if (HAL_GPIO_ReadPin(FLT_GPIO_Port, FLT_Pin))
+	{
+        run_event(&sm, E_RST_FLT);
+	}
+	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin))
+	{
+		run_event(&sm, E_START);
+	}
 }
 
 void send_heartbeat()
