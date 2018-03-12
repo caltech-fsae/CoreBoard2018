@@ -57,17 +57,6 @@
 /* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
-#define RESET_HEARTBEAT 20
-#define MAX_CURRENT 80
-#define PRESSED 1000 // pressed threshold
-#define MAX_THROTTLE_VAL 100 // ask David + Tyler
-
-#define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
-
-void mainloop();
-void send_heartbeat();
-void send_state();
-void get_CAN();
 
 /* USER CODE END Private defines */
 
