@@ -14,11 +14,11 @@ void initialize_state_machine(statemachine sm)
 	    // machine, state, event, next_state, function
 
 	    //STATE: WAIT_HEARTBEATS
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_START,                WAIT_DRIVER,  &do_nothing);
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_ACEL,           WAIT_DRIVER,  &do_nothing);
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &do_nothing);
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_DRIVER,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_START,                WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_ACEL,           WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_HEARTBEATS,  &do_nothing);
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_RST_FLT,              RST_FAULT,    &do_nothing);
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           NO_RST_FAULT, &do_nothing);
@@ -27,7 +27,7 @@ void initialize_state_machine(statemachine sm)
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_APPS_FLT,             NO_RST_FAULT, &do_nothing);
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_BSE_FLT,              NO_RST_FAULT, &do_nothing);
 	    add_tuple(&sm, WAIT_HEARTBEATS, E_AMS_FLT,              NO_RST_FAULT, &do_nothing);
-	    add_tuple(&sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
+	    add_tuple(&sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,  &RESET_FAULTS);
 
 	    //STATE: WAIT_DRIVER
 	    add_tuple(&sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);
@@ -46,7 +46,7 @@ void initialize_state_machine(statemachine sm)
 	    add_tuple(&sm, WAIT_DRIVER, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
 
 	    //STATE: DRIVE
-	    add_tuple(&sm, DRIVE, E_START,                DRIVE,        &do_nothing);
+	    add_tuple(&sm, DRIVE, E_START,                WAIT_DRIVER,  &END_DRIVE);
 	    add_tuple(&sm, DRIVE, E_PEDAL_ACEL,           DRIVE,        &PEDAL_ACEL);
 	    add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
 	    add_tuple(&sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
@@ -81,7 +81,7 @@ void initialize_state_machine(statemachine sm)
 	    add_tuple(&sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
 	    add_tuple(&sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
 	    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &PEDAL_BRAKE_RELEASED);
-	    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
+	    add_tuple(&sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
 	    add_tuple(&sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
 	    add_tuple(&sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &RST);
 	    add_tuple(&sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);

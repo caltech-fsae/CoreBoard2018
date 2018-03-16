@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "identifiers.h"
 
-// Messages for MID_FAULT_CAUSE
+// Messages for MID_FAULT_CAUSE // NOT USING THIS
 
 // Resettable Faults (bits 8 - 15)
 // Bit 8: BPPC      fault (YES/NO)
@@ -26,6 +26,7 @@
 // Generic NR fault if no bits set, Generic R fault if all bits set
 
 
+// NOT USING THESE, left in to allow for compilation.
 static const uint16_t GENERIC_NO_RST  = 0b0000000000000000;
 static const uint16_t IMD_FLT         = 0b0000000000010000;
 static const uint16_t BSPD_FLT        = 0b0000000000001000;
@@ -41,6 +42,8 @@ static const uint16_t BPPC_FLT        = 0b0000000100000000;
 void send_CAN(uint16_t, uint16_t);
 void send_FLT_CAN(uint16_t, uint16_t);
 
+void RESET_FAULTS();
+void END_DRIVE();
 void RTDS();
 void PEDAL_ACEL();
 void PWR_80();

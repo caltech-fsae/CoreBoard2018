@@ -12,6 +12,18 @@
 
 extern uint16_t throttle_val;
 
+void RESET_FAULTS()
+{
+	send_CAN(MID_RESET_FAULTS, 0);
+}
+
+void END_DRIVE()
+{
+	send_CAN(MID_END_DRIVE, 0);
+	throttle_val = 0;
+	send_CAN(MID_TORQUE_COMMAND, 0);
+}
+
 void RTDS()
 {
 	//assert RTDS GPIO active
@@ -76,9 +88,10 @@ void send_CAN(uint16_t MID, uint16_t message)
 void send_FLT_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function to send CAN specifically for faults
-	send_CAN(MID, message);
+	// send_CAN(MID, message); // Don't want to send fault type, just want MC to get 0 torque command
 
 	// sending 0 torque command
+	throttle_val = 0;
 	can_msg_t can_msg;
 	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_TORQUE_COMMAND), 0);
 	CAN_queue_transmit(&can_msg);

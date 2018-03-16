@@ -104,7 +104,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	else if (type == MID_THROTTLE_PRESSED)
 		    	{
 		    		throttle_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
-		    		if (brake_val < throttle_val && throttle_val > PRESSED)
+		    		if (brake_val < PRESSED && throttle_val > PRESSED)
 		    		{
 		    			run_event(&sm, E_PEDAL_ACEL);
 		    		}
@@ -114,6 +114,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		brake_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
 		    		if (brake_val > PRESSED)
 		    		{
+		    			throttle_val = 0;
 		    			run_event(&sm, E_PEDAL_BRAKE_PUSHED);
 		    		}
 		    		else
@@ -154,15 +155,19 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
     else if (HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
 	{
 		run_event(&sm, E_NO_RST_FLT);
+		return;
 	}
 	else if (HAL_GPIO_ReadPin(FLT_GPIO_Port, FLT_Pin))
 	{
         run_event(&sm, E_RST_FLT);
+        return;
 	}
 	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin))
 	{
 		run_event(&sm, E_START);
 	}
+
+    PEDAL_ACEL(); // sends MC torque commands
 }
 
 void send_heartbeat()
@@ -175,6 +180,6 @@ void send_heartbeat()
 void send_state()
 {
 	can_msg_t can_msg;
-	CAN_short_msg(&can_msg, create_ID(BID_CORE, (int) sm.current_state), 0);
+	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_CAR_STATE), (int) sm.current_state);
 	CAN_queue_transmit(&can_msg);
 }
