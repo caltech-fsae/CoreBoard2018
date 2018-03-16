@@ -11,6 +11,6 @@
 #include "sm_functions.h"
 #include "machine.h"
 
-void initialize_state_machine(statemachine sm);
+void initialize_state_machine(statemachine *sm);
 
 #endif /* INIT_SM_H_ */

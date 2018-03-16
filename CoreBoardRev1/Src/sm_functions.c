@@ -9,6 +9,7 @@
 #include "sm_functions.h"
 #include "mycan.h"
 #include "gpio.h"
+#include "can.h"
 #include "tim.h"
 
 extern uint16_t throttle_val;
@@ -34,7 +35,7 @@ void RTDS()
 // Functions for state transitions. Takes in CAN message and current state. Function names in form of SmState_Event.
 void PEDAL_ACEL()
 {
-	send_CAN(MID_THROTTLE, throttle_val);
+	send_CAN(MID_TORQUE_COMMAND, throttle_val);
 }
 
 void PWR_80()

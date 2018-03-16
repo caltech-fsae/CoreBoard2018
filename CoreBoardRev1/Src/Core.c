@@ -32,9 +32,9 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[0] = RESET_HEARTBEAT;
 		    	}
-		    	return;
+		    	break;
 		    case (int) BID_SHUTDOWN:
-		    	if (type == MID_HEARTBEAT && ((int) sm.current_state) == WAIT_HEARTBEATS)
+		    	if ((type == MID_HEARTBEAT) && (((int) sm.current_state) == WAIT_HEARTBEATS))
 		    	{
 		    		init_heartbeat[1] = 1;
 		    	}
@@ -44,6 +44,9 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_FAULT_STATUS)
 		    	{
+		    		if(message) {
+		    			run_event(&sm, E_NO_RST_FLT);
+		    		}
 		    		if (CHECK_BIT(message, 6)) // battery fault
 		    		{
 		    			run_event(&sm, E_NO_RST_FLT);
@@ -73,7 +76,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    			run_event(&sm, E_RST_FLT);
 		    		}
 		    	}
-		    	return;
+		    	break;
 		    case (int) BID_MOTOR_CONTROLLER:
 		    	if (type == MID_HEARTBEAT && ((int) sm.current_state) == WAIT_HEARTBEATS)
 		    	{
@@ -87,7 +90,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		run_event(&sm, E_PWR_80);
 		    	}
-		    	return;
+		    	break;
 		    case (int) BID_IO:
 		    	if (type == MID_HEARTBEAT && ((int) sm.current_state) == WAIT_HEARTBEATS)
 		    	{
@@ -122,9 +125,13 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    			run_event(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
 		    	}
-		    	return;
+		    	else if ((type == MID_BRAKE_STATUS) && ((message & 1) == 1))
+		    	{
+		    		run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    	}
+		    	break;
 		    case (int) BID_CORE:
-		    	return;
+		    	break;
 		}
 
 	}
@@ -134,7 +141,7 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
 {
 
 
-	if  (init_heartbeat[0] == 0 || init_heartbeat[1] == 0 || init_heartbeat[2] == 0 || init_heartbeat[3] == 0)
+	if  (/*init_heartbeat[0] == 0 ||*/ init_heartbeat[1] == 0 || /* init_heartbeat[2] == 0 || */ init_heartbeat[3] == 0)
 	{
 		return;
 	}
@@ -143,16 +150,26 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
 		run_event(&sm, E_BOARDS_LIVE);
 	}
 	// decrement all elements of heart beat array
-	heartbeat_counter[0]--;
+	// heartbeat_counter[0]--;
 	heartbeat_counter[1]--;
 	heartbeat_counter[2]--;
 	heartbeat_counter[3]--;
 
-    if (heartbeat_counter[0] <= 0 || heartbeat_counter[1] <= 0 || heartbeat_counter[2] <= 0 || heartbeat_counter[3] <= 0)
+	if ((int) sm.current_state == NO_RST_FAULT)
+	{
+         send_CAN(MID_FAULT_NR, 0);
+	}
+	else if ((int) sm.current_state == RST_FAULT)
+	{
+		 send_CAN(MID_FAULT, 0);
+	}
+
+
+    if (/*heartbeat_counter[0] <= 0 ||*/ heartbeat_counter[1] <= 0 || /* heartbeat_counter[2] <= 0 || */ heartbeat_counter[3] <= 0)
     {
     	run_event(&sm, E_NO_RST_FLT);
     }
-    else if (HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
+   /* else if (HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
 	{
 		run_event(&sm, E_NO_RST_FLT);
 		return;
@@ -161,7 +178,7 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
 	{
         run_event(&sm, E_RST_FLT);
         return;
-	}
+	} */
 	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin))
 	{
 		run_event(&sm, E_START);

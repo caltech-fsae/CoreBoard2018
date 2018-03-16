@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "machine.h"
 #include "sm_functions.h"
+#include "can.h"
 #include "mycan.h"
 #include "scheduler.h"
 #include "identifiers.h"
@@ -18,7 +19,7 @@
 
 #define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
 
-#define RESET_HEARTBEAT 20
+#define RESET_HEARTBEAT 100
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
 #define MAX_THROTTLE_VAL 100 // ask David + Tyler

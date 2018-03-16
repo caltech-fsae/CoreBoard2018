@@ -111,14 +111,15 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-    initialize_state_machine(sm);
+    initialize_state_machine(&sm);
 
     Schedule schedule;
     MakeSchedule(&schedule, 4);
-    AddTask(&schedule, &mainloop,       100);
-    AddTask(&schedule, &get_CAN,          1);
-    AddTask(&schedule, &send_heartbeat, 100);
-    AddTask(&schedule, &send_state,     200);
+    AddTask(&schedule, &mainloop,        457);
+    AddTask(&schedule, &get_CAN,          10);
+    AddTask(&schedule, &send_heartbeat, 1000);
+    AddTask(&schedule, &send_state,      600);
+    Init_MyCAN();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,8 +159,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)

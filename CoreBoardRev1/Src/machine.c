@@ -19,11 +19,11 @@ void add_tuple(statemachine * machine, StateType state, EventType event, StateTy
     Transition t;
     t.next_state = next_state;
     t.function = function;
-    machine->table[state * machine->num_states + event] = t;
+    machine->table[state * machine->num_events + event] = t;
 }
 
 void run_event(statemachine * machine, EventType event)
 {
-    machine->table[(machine->current_state) * machine->num_states + event].function();
-    machine->current_state = machine->table[(machine->current_state) * machine->num_states + event].next_state;
+    machine->table[(machine->current_state) * machine->num_events + event].function();
+    machine->current_state = machine->table[(machine->current_state) * machine->num_events + event].next_state;
 }
