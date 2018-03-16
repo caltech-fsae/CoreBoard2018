@@ -9,6 +9,7 @@
 #include "sm_functions.h"
 #include "mycan.h"
 #include "gpio.h"
+#include "tim.h"
 
 extern uint16_t throttle_val;
 
