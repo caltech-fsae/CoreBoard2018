@@ -70,7 +70,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim->Instance==TIM3) // Reset back high after 100ms
+	if (htim->Instance==TIM3) // Reset back high after 1000ms
 	{
 		HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
 	}
