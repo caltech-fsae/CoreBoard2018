@@ -12,6 +12,7 @@ uint16_t throttle_val = 0;
 uint16_t brake_val = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
+int start_button_counter = RESET_START;
 
 void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 {
@@ -44,9 +45,6 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_FAULT_STATUS)
 		    	{
-		    		if(message) {
-		    			run_event(&sm, E_NO_RST_FLT);
-		    		}
 		    		if (CHECK_BIT(message, 6)) // battery fault
 		    		{
 		    			run_event(&sm, E_NO_RST_FLT);
@@ -104,17 +102,17 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		run_event(&sm, E_BPPC_FLT);
 		    	}
-		    	else if (type == MID_THROTTLE_PRESSED)
+		    	else if (type == MID_THROTTLE)
 		    	{
-		    		throttle_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
+		    		throttle_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
 		    		if (brake_val < PRESSED && throttle_val > PRESSED)
 		    		{
 		    			run_event(&sm, E_PEDAL_ACEL);
 		    		}
 		    	}
-		    	else if (type == MID_BRAKE_PRESSED)
+		    	else if (type == MID_BRAKE)
 		    	{
-		    		brake_val = message/(0xFFFF)*MAX_THROTTLE_VAL;
+		    		brake_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
 		    		if (brake_val > PRESSED)
 		    		{
 		    			throttle_val = 0;
@@ -179,9 +177,18 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
         run_event(&sm, E_RST_FLT);
         return;
 	} */
-	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin))
+    if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter > 0)
+    {
+    	start_button_counter--;
+    }
+	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter <= 0)
 	{
 		run_event(&sm, E_START);
+		start_button_counter = RESET_START;
+	}
+	else
+	{
+		start_button_counter = RESET_START;
 	}
 
     PEDAL_ACEL(); // sends MC torque commands

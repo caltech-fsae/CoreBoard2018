@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "can.h"
 #include "tim.h"
+#include "stm32f4xx_hal.h"
 
 extern uint16_t throttle_val;
 
