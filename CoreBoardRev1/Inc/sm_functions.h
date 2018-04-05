@@ -40,22 +40,13 @@ static const uint16_t BPPC_FLT        = 0b0000000100000000;
 
 
 void send_CAN(uint16_t, uint16_t);
-void send_FLT_CAN(uint16_t, uint16_t);
+void send_FLT_CAN();
 
 void RESET_FAULTS();
 void END_DRIVE();
 void RTDS();
 void PEDAL_ACEL();
 void PWR_80();
-void BPPC_RST();
-void IMD_NO_RST();
-void BSPD_NO_RST();
-void APPS_NO_RST();
-void BSE_NO_RST();
-void BMS_NO_RST();
-void RST();
-void NO_RST();
-
 //above functions will use send_CAN
 //below functions will not use send_CAN
 

@@ -13,6 +13,7 @@ uint16_t brake_val = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 int start_button_counter = RESET_START;
+int button_pressed = 0;
 
 void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 {
@@ -43,7 +44,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[1] = RESET_HEARTBEAT;
 		    	}
-		    	else if (type == MID_FAULT_STATUS)
+		    	else if (type == MID_FAULT_STATUS && (int) sm.current_state != WAIT_HEARTBEATS)
 		    	{
 		    		if (CHECK_BIT(message, 6)) // battery fault
 		    		{
@@ -98,7 +99,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[3] = RESET_HEARTBEAT;
 		    	}
-		    	else if (type == MID_BPPC_BSPD)
+		    	else if (type == MID_BPPC_BSPD && (int) sm.current_state != WAIT_HEARTBEATS)
 		    	{
 		    		run_event(&sm, E_BPPC_FLT);
 		    	}
@@ -150,7 +151,7 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
 	// decrement all elements of heart beat array
 	// heartbeat_counter[0]--;
 	heartbeat_counter[1]--;
-	heartbeat_counter[2]--;
+	//heartbeat_counter[2]--;
 	heartbeat_counter[3]--;
 
 	if ((int) sm.current_state == NO_RST_FAULT)
@@ -167,6 +168,7 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
     {
     	run_event(&sm, E_NO_RST_FLT);
     }
+    // comment back in once running on new board with hardware support for reading these pins
    /* else if (HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
 	{
 		run_event(&sm, E_NO_RST_FLT);
@@ -181,14 +183,16 @@ void mainloop() // this is in the scheduler along with get_CAN, runs every 100 c
     {
     	start_button_counter--;
     }
-	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter <= 0)
+	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter <= 0 && !button_pressed)
 	{
 		run_event(&sm, E_START);
+		button_pressed = 1; // button was pressed, must be released to register next press
 		start_button_counter = RESET_START;
 	}
 	else
 	{
 		start_button_counter = RESET_START;
+		button_pressed = 0;
 	}
 
     PEDAL_ACEL(); // sends MC torque commands

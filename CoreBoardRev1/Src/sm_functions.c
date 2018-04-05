@@ -43,41 +43,6 @@ void PWR_80()
 {
 	send_CAN(MID_REDUCE_PWR, 0);
 }
-void BPPC_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, BPPC_FLT);
-}
-void IMD_NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, IMD_FLT);
-}
-void BSPD_NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, BSPD_FLT);
-}
-void APPS_NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, APPS_FLT);
-}
-void BSE_NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, BSE_FLT);
-
-}
-void BMS_NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, BMS_FLT);
-}
-
-void RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, GENERIC_RST);
-}
-void NO_RST()
-{
-	send_FLT_CAN(MID_FAULT_CAUSE, GENERIC_NO_RST);
-}
-
 
 void send_CAN(uint16_t MID, uint16_t message)
 {
@@ -89,7 +54,7 @@ void send_CAN(uint16_t MID, uint16_t message)
 	CAN_queue_transmit(&can_msg);
 }
 
-void send_FLT_CAN(uint16_t MID, uint16_t message)
+void send_FLT_CAN()
 {
 	// helper function to send CAN specifically for faults
 	// send_CAN(MID, message); // Don't want to send fault type, just want MC to get 0 torque command
