@@ -100,14 +100,14 @@ void initialize_state_machine(statemachine *sm)
 	    add_tuple(sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &PEDAL_BRAKE_RELEASED);
 	    add_tuple(sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &PEDAL_BRAKE_PUSHED);
 	    add_tuple(sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,  &PWR_80);
-	    add_tuple(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &RST);
+	    add_tuple(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
 	    add_tuple(sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,  &do_nothing);
-	    add_tuple(sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT,  &NO_RST);
-	    add_tuple(sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,  &IMD_NO_RST);
-	    add_tuple(sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,  &BSPD_NO_RST);
-	    add_tuple(sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,  &APPS_NO_RST);
-	    add_tuple(sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,  &BSE_NO_RST);
-	    add_tuple(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &BMS_NO_RST);
+	    add_tuple(sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT,  &send_FLT_CAN);
+	    add_tuple(sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    add_tuple(sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
+	    add_tuple(sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
+	    add_tuple(sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    add_tuple(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
 	    add_tuple(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
 
 }

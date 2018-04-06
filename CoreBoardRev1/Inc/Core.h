@@ -23,7 +23,7 @@
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
 #define MAX_THROTTLE_VAL 0xFFFF // ask David + Tyler
-#define RESET_START 100;
+#define RESET_START 1000;
 
 void mainloop();
 void send_heartbeat();
