@@ -14,6 +14,7 @@ int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 int start_button_counter = RESET_START;
 int button_pressed = 0;
+int first_run = 1;
 
 void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 {
@@ -36,7 +37,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	break;
 		    case (int) BID_SHUTDOWN:
-		    	if ((type == MID_HEARTBEAT) && (((int) sm.current_state) == WAIT_HEARTBEATS))
+		    	if (type == MID_HEARTBEAT)
 		    	{
 		    		init_heartbeat[1] = 1;
 		    	}
@@ -44,7 +45,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[1] = RESET_HEARTBEAT;
 		    	}
-		    	else if (type == MID_FAULT_STATUS && (int) sm.current_state != WAIT_HEARTBEATS)
+		    	else if (type == MID_FAULT_STATUS)
 		    	{
 		    		if (CHECK_BIT(message, 6)) // battery fault
 		    		{
@@ -77,7 +78,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	break;
 		    case (int) BID_MOTOR_CONTROLLER:
-		    	if (type == MID_HEARTBEAT && ((int) sm.current_state) == WAIT_HEARTBEATS)
+		    	if (type == MID_HEARTBEAT)
 		    	{
 		    		init_heartbeat[2] = 1;
 		    	}
@@ -91,7 +92,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	break;
 		    case (int) BID_IO:
-		    	if (type == MID_HEARTBEAT && ((int) sm.current_state) == WAIT_HEARTBEATS)
+		    	if (type == MID_HEARTBEAT)
 		    	{
 		    		init_heartbeat[3] = 1;
 		    	}
@@ -99,9 +100,18 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		heartbeat_counter[3] = RESET_HEARTBEAT;
 		    	}
-		    	else if (type == MID_BPPC_BSPD && (int) sm.current_state != WAIT_HEARTBEATS)
+		    	else if (type == MID_BPPC_BSPD)
 		    	{
-		    		run_event(&sm, E_BPPC_FLT);
+		    		// message 0b00: 0b0x = BSPD, NR
+		    		//               0bx0 = BPPC, R
+		    		if (CHECK_BIT(message, 0))
+		    		{
+		    		    run_event(&sm, E_BSPD_FLT); // NR FAULT
+		    		}
+		    		else if (CHECK_BIT(message, 1))
+		    		{
+		    			run_event(&sm, E_BPPC_FLT); // R FAULT
+		    		}
 		    	}
 		    	else if (type == MID_THROTTLE)
 		    	{
@@ -203,6 +213,11 @@ void send_heartbeat()
 	can_msg_t can_msg;
 	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_HEARTBEAT), 0);
 	CAN_queue_transmit(&can_msg);
+	if (first_run)
+	{
+	    first_run = 0;
+	    RESET_FAULTS();
+	}
 }
 
 void send_state()

@@ -16,18 +16,18 @@ void initialize_state_machine(statemachine *sm)
 	    //STATE: WAIT_HEARTBEATS
 	    add_tuple(sm, WAIT_HEARTBEATS, E_START,                WAIT_HEARTBEATS,  &do_nothing);
 	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_ACEL,           WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_HEARTBEATS,  &PEDAL_BRAKE_RELEASED);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
 	    add_tuple(sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,  &RESET_FAULTS);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_RST_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_BPPC_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_IMD_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_BSPD_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_APPS_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_BSE_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_AMS_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &RESET_FAULTS);
 
 	    //STATE: WAIT_DRIVER
 	    add_tuple(sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);
