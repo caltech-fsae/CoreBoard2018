@@ -44,14 +44,20 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+#include "machine.h"
+#include "sm_functions.h"
 #include "mycan.h"
+#include "scheduler.h"
+#include "identifiers.h"
+#include "init_sm.h"
+#include "Core.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+statemachine sm;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,7 +69,13 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance==TIM3) // Reset back high after 1000ms
+	{
+		HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -98,14 +110,24 @@ int main(void)
   MX_TIM3_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
+  initialize_state_machine(&sm);
 
+  Schedule schedule;
+  MakeSchedule(&schedule, 4);
+  AddTask(&schedule, &mainloop,        457);
+  AddTask(&schedule, &get_CAN,          10);
+  AddTask(&schedule, &send_heartbeat, 1000);
+  AddTask(&schedule, &send_state,      600);
+  Init_MyCAN();
+
+  HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  RunSchedule(&schedule);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
