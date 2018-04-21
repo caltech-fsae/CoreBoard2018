@@ -27,7 +27,7 @@ void initialize_state_machine(statemachine *sm)
 	    add_tuple(sm, WAIT_HEARTBEATS, E_APPS_FLT,             WAIT_HEARTBEATS,  &do_nothing);
 	    add_tuple(sm, WAIT_HEARTBEATS, E_BSE_FLT,              WAIT_HEARTBEATS,  &do_nothing);
 	    add_tuple(sm, WAIT_HEARTBEATS, E_AMS_FLT,              WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &RESET_FAULTS);
+	    add_tuple(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &do_nothing);
 
 	    //STATE: WAIT_DRIVER
 	    add_tuple(sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);

@@ -19,11 +19,12 @@
 
 #define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
 
-#define RESET_HEARTBEAT 100
+#define RESET_HEARTBEAT 1000
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
 #define MAX_THROTTLE_VAL 0xFFFF // ask David + Tyler
 #define RESET_START 1000;
+#define RESET_FLT_CNT 100;
 
 #define START_GPIO_Port			GPIOE
 #define START_Pin				GPIO_PIN_3
@@ -64,6 +65,7 @@ void mainloop();
 void send_heartbeat();
 void send_state();
 void get_CAN();
+void assert_FLT_lines();
 
 void WriteAUXLED(uint8_t led, uint8_t state);
 void ToggleAUXLED(uint8_t led);

@@ -118,9 +118,14 @@ int main(void)
   AddTask(&schedule, &get_CAN,          10);
   AddTask(&schedule, &send_heartbeat, 1000);
   AddTask(&schedule, &send_state,      600);
+  AddTask(&schedule, &assert_FLT_lines, 77);
   Init_MyCAN();
 
   HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
+  WriteAUXLED(0, 0);
+  WriteAUXLED(1, 0);
+  WriteAUXLED(2, 0);
+  WriteAUXLED(3, 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
