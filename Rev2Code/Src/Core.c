@@ -98,7 +98,6 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		if (CHECK_BIT(message, 0))
 		    		{
 		    		    run_event(&sm, E_BSPD_FLT); // NR FAULT
-
 		    		}
 		    		else if (CHECK_BIT(message, 1))
 		    		{
@@ -154,7 +153,7 @@ void mainloop() // this is in the scheduler along with get_CAN
 	// heartbeat_counter[0]--;
 	heartbeat_counter[1]--;
 	//heartbeat_counter[2]--;
-	//heartbeat_counter[3]--;
+	heartbeat_counter[3]--;
 
 	if ((int) sm.current_state == NO_RST_FAULT)
 	{
@@ -168,11 +167,11 @@ void mainloop() // this is in the scheduler along with get_CAN
 
     if (/*heartbeat_counter[0] <= 0 ||*/ heartbeat_counter[1] <= 0 ||  /* heartbeat_counter[2] <= 0 || */ heartbeat_counter[3] <= 0)
     {
-    	run_event(&sm, E_NO_RST_FLT);
-    	WriteAUXLED(2, 1);
+    	//run_event(&sm, E_NO_RST_FLT);
+    	//WriteAUXLED(2, 1);
     } else
     {
-    	WriteAUXLED(2, 0);
+    	//WriteAUXLED(2, 0);
     }
 
     if (!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
@@ -259,15 +258,15 @@ void assert_FLT_lines()
 {
 	if ((int) sm.current_state == NO_RST_FAULT)
 	{
-		HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET);
+		//HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET);
 	}
 	else if ((int) sm.current_state == RST_FAULT)
 	{
-		HAL_GPIO_WritePin(FLT_CTRL_GPIO_Port, FLT_CTRL_Pin, GPIO_PIN_SET);
+		//HAL_GPIO_WritePin(FLT_CTRL_GPIO_Port, FLT_CTRL_Pin, GPIO_PIN_SET);
 	}
 	else
 	{
-		HAL_GPIO_WritePin(FLT_CTRL_GPIO_Port, FLT_CTRL_Pin, GPIO_PIN_RESET);
+		//HAL_GPIO_WritePin(FLT_CTRL_GPIO_Port, FLT_CTRL_Pin, GPIO_PIN_RESET);
 	}
 }
 
