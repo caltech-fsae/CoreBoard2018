@@ -112,7 +112,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    			run_event(&sm, E_PEDAL_ACEL);
 		    		}
 		    	}
-		    	else if (type == MID_BRAKE)
+		    	/*else if (type == MID_BRAKE)
 		    	{
 		    		brake_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
 		    		if (brake_val > PRESSED)
@@ -124,10 +124,16 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		{
 		    			run_event(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
-		    	}
-		    	else if ((type == MID_BRAKE_STATUS) && ((message & 1) == 1))
+		    	}*/
+		    	else if (type == MID_BRAKE_STATUS)
 		    	{
-		    		run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    		if ((message & 1) == 1) {
+		    		   throttle_val = 0;
+		    		   run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    		}
+		    		else {
+		    		   run_event(&sm, E_PEDAL_BRAKE_RELEASED);
+		    		}
 		    	}
 		    	break;
 		    case (int) BID_CORE:
