@@ -9,7 +9,7 @@
 #define CORE_H_
 
 #include "gpio.h"
-#include "machine.h"
+#include "sm2.h"
 #include "sm_functions.h"
 #include "can.h"
 #include "mycan.h"
@@ -60,6 +60,29 @@
 #define AUX_LED_3_PIN			GPIO_PIN_15
 
 // Prototypes ------------------------------------------------------------------------------
+
+extern int WAIT_HEARTBEATS;
+extern int WAIT_DRIVER;
+extern int START_BRAKE;
+extern int DRIVE;
+extern int RST_FAULT;
+extern int NO_RST_FAULT;
+
+extern int E_START,                // start button gpio active
+E_PEDAL_ACEL,           // acel pedal value changed enough for us to care about
+E_PEDAL_BRAKE_PUSHED,   // brake pedal pushed beyond threshold to turn on brake light
+E_PEDAL_BRAKE_RELEASED, // brake pedal not beyond threshold to turn on brake light
+E_PWR_80,               // power more than 80 kW
+E_RST_FLT,
+E_BPPC_FLT,             // BPPC asserted resettable fault
+E_IMD_FLT,           // IMD asserted non-resettable fault
+E_BSPD_FLT,          // BSPD asserted non-resettable fault
+E_APPS_FLT,          // APPS asserted non-resettable fault
+E_BSE_FLT,           // BSE asserted non-resettable fault
+E_AMS_FLT,            // BMS asserted non-resettable fault
+E_NO_RST_FLT,
+E_BOARDS_LIVE;        // all boards sent a heartbeat
+
 
 void mainloop();
 void send_heartbeat();

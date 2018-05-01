@@ -7,107 +7,156 @@
 
 #include "init_sm.h"
 
-void initialize_state_machine(statemachine *sm)
-{
-	    make_state_machine(sm, NUM_STATES, NUM_EVENTS, WAIT_HEARTBEATS);
+#define NUM_EVENTS 14
+#define NUM_STATES 6
 
+int WAIT_HEARTBEATS;
+int WAIT_DRIVER;
+int START_BRAKE;
+int DRIVE;
+int RST_FAULT;
+int NO_RST_FAULT;
+
+int E_START,                // start button gpio active
+E_PEDAL_ACEL,           // acel pedal value changed enough for us to care about
+E_PEDAL_BRAKE_PUSHED,   // brake pedal pushed beyond threshold to turn on brake light
+E_PEDAL_BRAKE_RELEASED, // brake pedal not beyond threshold to turn on brake light
+E_PWR_80,               // power more than 80 kW
+E_RST_FLT,
+E_BPPC_FLT,             // BPPC asserted resettable fault
+E_IMD_FLT,           // IMD asserted non-resettable fault
+E_BSPD_FLT,          // BSPD asserted non-resettable fault
+E_APPS_FLT,          // APPS asserted non-resettable fault
+E_BSE_FLT,           // BSE asserted non-resettable fault
+E_AMS_FLT,            // BMS asserted non-resettable fault
+E_NO_RST_FLT,
+E_BOARDS_LIVE;        // all boards sent a heartbeat
+
+void initialize_state_machine(StateMachine *sm)
+{
+    MakeStateMachine(sm, NUM_STATES, NUM_EVENTS);
+
+	WAIT_HEARTBEATS = MakeState(sm, &do_nothing);
+	WAIT_DRIVER = MakeState(sm, &do_nothing);
+	START_BRAKE = MakeState(sm, &do_nothing);
+	DRIVE = MakeState(sm, &do_nothing);
+	RST_FAULT = MakeState(sm, &do_nothing);
+	NO_RST_FAULT = MakeState(sm, &do_nothing);
+
+
+	E_START = MakeEvent(sm);                // start button gpio active
+	E_PEDAL_ACEL = MakeEvent(sm);          // acel pedal value changed enough for us to care about
+	E_PEDAL_BRAKE_PUSHED = MakeEvent(sm);   // brake pedal pushed beyond threshold to turn on brake light
+	E_PEDAL_BRAKE_RELEASED = MakeEvent(sm); // brake pedal not beyond threshold to turn on brake light
+	E_PWR_80 = MakeEvent(sm);               // power more than 80 kW
+	E_RST_FLT = MakeEvent(sm);
+	E_BPPC_FLT = MakeEvent(sm);             // BPPC asserted resettable fault
+	E_IMD_FLT = MakeEvent(sm);           // IMD asserted non-resettable fault
+	E_BSPD_FLT = MakeEvent(sm);          // BSPD asserted non-resettable fault
+	E_APPS_FLT = MakeEvent(sm);          // APPS asserted non-resettable fault
+	E_BSE_FLT = MakeEvent(sm);           // BSE asserted non-resettable fault
+	E_AMS_FLT = MakeEvent(sm);            // BMS asserted non-resettable fault
+	E_NO_RST_FLT = MakeEvent(sm);
+	E_BOARDS_LIVE = MakeEvent(sm);
+
+	InitStateMachine(sm, WAIT_HEARTBEATS);
 	    // machine, state, event, next_state, function
 
 	    //STATE: WAIT_HEARTBEATS
-	    add_tuple(sm, WAIT_HEARTBEATS, E_START,                WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_ACEL,           WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_HEARTBEATS,  &PEDAL_BRAKE_RELEASED);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_RST_FLT,              WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BPPC_FLT,             WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_IMD_FLT,              WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BSPD_FLT,             WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_APPS_FLT,             WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BSE_FLT,              WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_AMS_FLT,              WAIT_HEARTBEATS,  &do_nothing);
-	    add_tuple(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_START,                WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_PEDAL_ACEL,           WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_RELEASED, WAIT_HEARTBEATS,  &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_RST_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_BPPC_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_IMD_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_BSPD_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_APPS_FLT,             WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_BSE_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_AMS_FLT,              WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &do_nothing);
 
 	    //STATE: WAIT_DRIVER
-	    add_tuple(sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);
-	    add_tuple(sm, WAIT_DRIVER, E_PEDAL_ACEL,           WAIT_DRIVER,  &do_nothing);
-	    add_tuple(sm, WAIT_DRIVER, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &PEDAL_BRAKE_RELEASED);
-	    add_tuple(sm, WAIT_DRIVER, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
-	    add_tuple(sm, WAIT_DRIVER, E_PWR_80,               WAIT_DRIVER,  &PWR_80);
-	    add_tuple(sm, WAIT_DRIVER, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, WAIT_DRIVER, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, WAIT_DRIVER, E_PEDAL_ACEL,           WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, WAIT_DRIVER, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, WAIT_DRIVER, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, WAIT_DRIVER, E_PWR_80,               WAIT_DRIVER,  &PWR_80);
+	    AddEvent(sm, WAIT_DRIVER, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, WAIT_DRIVER, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
 
 	    //STATE: DRIVE
-	    add_tuple(sm, DRIVE, E_START,                WAIT_DRIVER,  &END_DRIVE);
-	    add_tuple(sm, DRIVE, E_PEDAL_ACEL,           DRIVE,        &PEDAL_ACEL);
-	    add_tuple(sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
-	    add_tuple(sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
-	    add_tuple(sm, DRIVE, E_PWR_80,               DRIVE,        &PWR_80);
-	    add_tuple(sm, DRIVE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, DRIVE, E_BOARDS_LIVE,          DRIVE,  &do_nothing);
+	    AddEvent(sm, DRIVE, E_START,                WAIT_DRIVER,  &END_DRIVE);
+	    AddEvent(sm, DRIVE, E_PEDAL_ACEL,           DRIVE,        &PEDAL_ACEL);
+	    AddEvent(sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, DRIVE, E_PWR_80,               DRIVE,        &PWR_80);
+	    AddEvent(sm, DRIVE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_BOARDS_LIVE,          DRIVE,  &do_nothing);
 
 	    //STATE: START_BRAKE
-	    add_tuple(sm, START_BRAKE, E_START,                DRIVE,        &RTDS);
-	    add_tuple(sm, START_BRAKE, E_PEDAL_ACEL,           WAIT_DRIVER,  &do_nothing);
-	    add_tuple(sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &do_nothing);
-	    add_tuple(sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
-	    add_tuple(sm, START_BRAKE, E_PWR_80,               START_BRAKE,  &PWR_80);
-	    add_tuple(sm, START_BRAKE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, START_BRAKE, E_BOARDS_LIVE,          START_BRAKE,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_START,                DRIVE,        &RTDS);
+	    AddEvent(sm, START_BRAKE, E_PEDAL_ACEL,           WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_PWR_80,               START_BRAKE,  &PWR_80);
+	    AddEvent(sm, START_BRAKE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_BOARDS_LIVE,          START_BRAKE,  &do_nothing);
 
 	    //STATE: RST_FAULT
-	    add_tuple(sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
-	    add_tuple(sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
-	    add_tuple(sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &PEDAL_BRAKE_RELEASED);
-	    add_tuple(sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
-	    add_tuple(sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
-	    add_tuple(sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
-	    add_tuple(sm, RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
-	    add_tuple(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
+	    AddEvent(sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_APPS_FLT,             NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
+	    AddEvent(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
 
 
 	    //STATE: NO_RST_FAULT
-	    add_tuple(sm, NO_RST_FAULT, E_START,                NO_RST_FAULT,  &do_nothing);
-	    add_tuple(sm, NO_RST_FAULT, E_PEDAL_ACEL,           NO_RST_FAULT,  &do_nothing);
-	    add_tuple(sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &PEDAL_BRAKE_RELEASED);
-	    add_tuple(sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &PEDAL_BRAKE_PUSHED);
-	    add_tuple(sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,  &PWR_80);
-	    add_tuple(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,  &do_nothing);
-	    add_tuple(sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
-	    add_tuple(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_START,                NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_PEDAL_ACEL,           NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,  &PWR_80);
+	    AddEvent(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_BSPD_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_APPS_FLT,             NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
 
 }

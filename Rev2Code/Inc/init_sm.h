@@ -9,8 +9,8 @@
 #define INIT_SM_H_
 
 #include "sm_functions.h"
-#include "machine.h"
+#include "sm2.h"
 
-void initialize_state_machine(statemachine *sm);
+void initialize_state_machine(StateMachine *sm);
 
 #endif /* INIT_SM_H_ */

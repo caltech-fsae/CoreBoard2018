@@ -44,7 +44,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "machine.h"
+#include "sm2.h"
 #include "sm_functions.h"
 #include "mycan.h"
 #include "scheduler.h"
@@ -57,7 +57,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-statemachine sm;
+StateMachine sm;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

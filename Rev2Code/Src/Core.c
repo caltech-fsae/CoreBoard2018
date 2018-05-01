@@ -7,7 +7,7 @@
 
 #include "Core.h"
 
-extern statemachine sm;
+extern StateMachine sm;
 uint16_t throttle_val = 0;
 uint16_t brake_val = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
@@ -45,32 +45,32 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		/*if (CHECK_BIT(message, 6)) // battery fault
 		    		{
-		    			run_event(&sm, E_NO_RST_FLT);
+		    			RunEvent(&sm, E_NO_RST_FLT);
 		    		}
 		    		else if (CHECK_BIT(message, 5)) // interlock fault
 		    		{
-		    			run_event(&sm, E_NO_RST_FLT);
+		    			RunEvent(&sm, E_NO_RST_FLT);
 		    		}
 		    		else if (CHECK_BIT(message, 3)) // generic nonresettable fault
 		    		{
-		    			run_event(&sm, E_NO_RST_FLT);
+		    			RunEvent(&sm, E_NO_RST_FLT);
 		    			WriteAUXLED(1, 1);
 		    		}
 		    		else if (CHECK_BIT(message, 1)) // AMS fault
 		    		{
-		    			run_event(&sm, E_AMS_FLT);
+		    			RunEvent(&sm, E_AMS_FLT);
 		    		}
 		    		else if (CHECK_BIT(message, 2)) // IMD fault
 		    		{
-		    			run_event(&sm, E_IMD_FLT);
+		    			RunEvent(&sm, E_IMD_FLT);
 		    		}
 		    		else if (CHECK_BIT(message, 0)) // BSPD fault
 		    		{
-		    			run_event(&sm, E_BSPD_FLT);
+		    			RunEvent(&sm, E_BSPD_FLT);
 		    		}
 		    		else if (CHECK_BIT(message, 4)) // generic resettable fault
 		    		{
-		    			run_event(&sm, E_RST_FLT);
+		    			RunEvent(&sm, E_RST_FLT);
 		    		}*/
 		    	}
 		    	break;
@@ -82,7 +82,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_BATTERY_CURRENT && message >= MAX_CURRENT)
 		    	{
-		    		run_event(&sm, E_PWR_80);
+		    		RunEvent(&sm, E_PWR_80);
 		    	}
 		    	break;
 		    case (int) BID_IO:
@@ -97,11 +97,11 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		//               0bx0 = BPPC, R
 		    		if (CHECK_BIT(message, 0))
 		    		{
-		    		    run_event(&sm, E_BSPD_FLT); // NR FAULT
+		    	//	    RunEvent(&sm, E_BSPD_FLT); // NR FAULT
 		    		}
 		    		else if (CHECK_BIT(message, 1))
 		    		{
-		    			run_event(&sm, E_BPPC_FLT); // R FAULT
+		    			RunEvent(&sm, E_BPPC_FLT); // R FAULT
 		    		}
 		    	}
 		    	else if (type == MID_THROTTLE)
@@ -109,7 +109,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		throttle_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
 		    		if (brake_val < PRESSED && throttle_val > PRESSED)
 		    		{
-		    			run_event(&sm, E_PEDAL_ACEL);
+		    			RunEvent(&sm, E_PEDAL_ACEL);
 		    		}
 		    	}
 		    	/*else if (type == MID_BRAKE)
@@ -118,21 +118,21 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		if (brake_val > PRESSED)
 		    		{
 		    			throttle_val = 0;
-		    			run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    			RunEvent(&sm, E_PEDAL_BRAKE_PUSHED);
 		    		}
 		    		else
 		    		{
-		    			run_event(&sm, E_PEDAL_BRAKE_RELEASED);
+		    			RunEvent(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
 		    	}*/
 		    	else if (type == MID_BRAKE_STATUS)
 		    	{
 		    		if ((message & 1) == 1) {
 		    		   throttle_val = 0;
-		    		   run_event(&sm, E_PEDAL_BRAKE_PUSHED);
+		    		   RunEvent(&sm, E_PEDAL_BRAKE_PUSHED);
 		    		}
 		    		else {
-		    		   run_event(&sm, E_PEDAL_BRAKE_RELEASED);
+		    		   RunEvent(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
 		    	}
 		    	break;
@@ -153,7 +153,7 @@ void mainloop() // this is in the scheduler along with get_CAN
 	}
 	else
 	{
-		run_event(&sm, E_BOARDS_LIVE);
+		RunEvent(&sm, E_BOARDS_LIVE);
 	}
 	// decrement all elements of heart beat array
 	// heartbeat_counter[0]--;
@@ -161,11 +161,11 @@ void mainloop() // this is in the scheduler along with get_CAN
 	//heartbeat_counter[2]--;
 	heartbeat_counter[3]--;
 
-	if ((int) sm.current_state == NO_RST_FAULT)
+	if ((int) sm.current_state_ == NO_RST_FAULT)
 	{
          send_CAN(MID_FAULT_NR, 0);
 	}
-	else if ((int) sm.current_state == RST_FAULT)
+	else if ((int) sm.current_state_ == RST_FAULT)
 	{
 		 send_CAN(MID_FAULT, 0);
 	}
@@ -173,7 +173,7 @@ void mainloop() // this is in the scheduler along with get_CAN
 
     if (/*heartbeat_counter[0] <= 0 ||*/ heartbeat_counter[1] <= 0 ||  /* heartbeat_counter[2] <= 0 || */ heartbeat_counter[3] <= 0)
     {
-    	//run_event(&sm, E_NO_RST_FLT);
+    	//RunEvent(&sm, E_NO_RST_FLT);
     	//WriteAUXLED(2, 1);
     } else
     {
@@ -189,7 +189,7 @@ void mainloop() // this is in the scheduler along with get_CAN
         else if (flt_nr_counter <= 0)
         {
         	flt_nr_counter = RESET_FLT_CNT;
-        	run_event(&sm, E_NO_RST_FLT);
+        	//RunEvent(&sm, E_NO_RST_FLT);
         	WriteAUXLED(3, 1);
         }
        	else
@@ -207,7 +207,7 @@ void mainloop() // this is in the scheduler along with get_CAN
 		else if (flt_r_counter <= 0)
 		{
 		   	flt_r_counter = RESET_FLT_CNT;
-		   	run_event(&sm, E_RST_FLT);
+		   	RunEvent(&sm, E_RST_FLT);
 		}
 		else
 		{
@@ -222,7 +222,7 @@ void mainloop() // this is in the scheduler along with get_CAN
     }
 	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter <= 0 && !button_pressed)
 	{
-		run_event(&sm, E_START);
+		RunEvent(&sm, E_START);
 		button_pressed = 1; // button was pressed, must be released to register next press
 		start_button_counter = RESET_START;
 	}
@@ -250,9 +250,9 @@ void send_heartbeat()
 void send_state()
 {
 	can_msg_t can_msg;
-	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_CAR_STATE), (int) sm.current_state);
+	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_CAR_STATE), (int) sm.current_state_);
 	CAN_queue_transmit(&can_msg);
-	if ((int) sm.current_state == DRIVE) {
+	if ((int) sm.current_state_ == DRIVE) {
 		WriteAUXLED(0, 1);
 	}
 	else {
@@ -262,11 +262,11 @@ void send_state()
 
 void assert_FLT_lines()
 {
-	if ((int) sm.current_state == NO_RST_FAULT)
+	if ((int) sm.current_state_ == NO_RST_FAULT)
 	{
 		//HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET);
 	}
-	else if ((int) sm.current_state == RST_FAULT)
+	else if ((int) sm.current_state_ == RST_FAULT)
 	{
 		//HAL_GPIO_WritePin(FLT_CTRL_GPIO_Port, FLT_CTRL_Pin, GPIO_PIN_SET);
 	}
