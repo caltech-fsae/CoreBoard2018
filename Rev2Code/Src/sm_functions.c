@@ -14,6 +14,8 @@
 #include "stm32f4xx_hal.h"
 #include "Core.h"
 
+
+
 extern uint16_t throttle_val;
 
 void RESET_FAULTS()
@@ -87,3 +89,5 @@ void PEDAL_BRAKE_RELEASED()
 
 	HAL_GPIO_WritePin(BRAKELIGHT_GPIO_Port, BRAKELIGHT_Pin, GPIO_PIN_RESET);
 }
+
+

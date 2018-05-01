@@ -90,7 +90,16 @@ void send_state();
 void get_CAN();
 void assert_FLT_lines();
 
+
 void WriteAUXLED(uint8_t led, uint8_t state);
 void ToggleAUXLED(uint8_t led);
+
+//STATE FUNCTIONS OH BOY OH BOY ====================================
+void WaitHeartbeatsFunc();
+void WaitDriverFunc();
+void StartBreakFunc();
+void DriveFunc();
+void RstFaultFunc();
+void NoRstFaultFunc();
 
 #endif /* CORE_H_ */

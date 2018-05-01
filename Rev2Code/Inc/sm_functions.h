@@ -55,4 +55,14 @@ void do_nothing();
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();
 
+int WAIT_HEARTBEATS;
+int WAIT_DRIVER;
+int START_BRAKE;
+int DRIVE;
+int RST_FAULT;
+int NO_RST_FAULT;
+
+
+
+
 #endif /* SM_FUNCTIONS_H_ */

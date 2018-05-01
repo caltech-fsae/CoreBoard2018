@@ -36,12 +36,12 @@ void initialize_state_machine(StateMachine *sm)
 {
     MakeStateMachine(sm, NUM_STATES, NUM_EVENTS);
 
-	WAIT_HEARTBEATS = MakeState(sm, &do_nothing);
-	WAIT_DRIVER = MakeState(sm, &do_nothing);
-	START_BRAKE = MakeState(sm, &do_nothing);
-	DRIVE = MakeState(sm, &do_nothing);
-	RST_FAULT = MakeState(sm, &do_nothing);
-	NO_RST_FAULT = MakeState(sm, &do_nothing);
+	WAIT_HEARTBEATS = MakeState(sm, &WaitHeartbeatsFunc);
+	WAIT_DRIVER = MakeState(sm, &WaitDriverFunc);
+	START_BRAKE = MakeState(sm, &StartBreakFunc);
+	DRIVE = MakeState(sm, &DriveFunc);
+	RST_FAULT = MakeState(sm, &RstFaultFunc);
+	NO_RST_FAULT = MakeState(sm, &NoRstFaultFunc);
 
 
 	E_START = MakeEvent(sm);                // start button gpio active
