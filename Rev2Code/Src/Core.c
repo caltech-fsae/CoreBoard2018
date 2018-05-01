@@ -10,6 +10,8 @@
 extern StateMachine sm;
 uint16_t throttle_val = 0;
 uint16_t brake_val = 0;
+int brake_pressed = 0;
+int throttle_pressed = 1;
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 int start_button_counter = RESET_START;
 int flt_r_counter = RESET_FLT_CNT;
@@ -107,7 +109,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		//               0bx0 = BPPC, R
 		    		if (CHECK_BIT(message, 0))
 		    		{
-		    	//	    RunEvent(&sm, E_BSPD_FLT); // NR FAULT
+		    		    RunEvent(&sm, E_BSPD_FLT); // NR FAULT
 		    		}
 		    		else if (CHECK_BIT(message, 1))
 		    		{
@@ -116,11 +118,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_THROTTLE)
 		    	{
-		    		throttle_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
-		    		if (brake_val < PRESSED && throttle_val > PRESSED)
-		    		{
-		    			RunEvent(&sm, E_PEDAL_ACEL);
-		    		}
+		    		throttle_val = throttle_pressed ? (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL) : 0;
 		    	}
 		    	/*else if (type == MID_BRAKE)
 		    	{
@@ -135,9 +133,14 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    			RunEvent(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
 		    	}*/
-		    	else if (type == MID_BRAKE_STATUS)
+		    	else if (type == MID_PEDAL_STATUS)
 		    	{
-		    		if ((message & 1) == 1) {
+		    		brake_pressed = message & 1;
+		    		throttle_pressed = (message & 4) >> 2;
+		    		if ((message & 1) == 0 && (message & 4) == 1) {
+		    		   RunEvent(&sm, E_PEDAL_ACEL);
+		    		}
+		    		else if ((message & 1) == 1) {
 		    		   throttle_val = 0;
 		    		   RunEvent(&sm, E_PEDAL_BRAKE_PUSHED);
 		    		}
@@ -156,7 +159,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 int CheckHeartbeats() {
     if (/*heartbeat_counter[0] <= 0 ||*/ heartbeat_counter[1] <= 0 ||  /* heartbeat_counter[2] <= 0 || */ heartbeat_counter[3] <= 0)
     {
-    	//RunEvent(&sm, E_NO_RST_FLT);
+    	RunEvent(&sm, E_NO_RST_FLT);
     	//WriteAUXLED(2, 1);
     } else
     {
@@ -347,14 +350,14 @@ void ToggleAUXLED(uint8_t led)
 }
 
 void WaitHeartbeatsFunc() {
-	CheckFaultNR();
+	//CheckFaultNR();
 	init_heartbeat[BMS_HEARTBEAT] ? 0 : heartbeat_counter[BMS_HEARTBEAT]--;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? 0 : heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
 	init_heartbeat[MC_HEARTBEAT] ? 0 : heartbeat_counter[MC_HEARTBEAT]--;
 	init_heartbeat[IO_HEARTBEAT] ? 0 : heartbeat_counter[IO_HEARTBEAT]--;
 	DecrementHeartbeats();
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 ||*/ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0  || /* init_heartbeat[MC_HEARTBEAT] == 0 || */ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0  ||*/ /* init_heartbeat[MC_HEARTBEAT] == 0 || */ init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 		WriteAUXLED(3, 1);
 		return;
@@ -394,7 +397,8 @@ void RstFaultFunc(){
 	CheckFaultResettable();
 }
 void NoRstFaultFunc(){
-    send_CAN(MID_FAULT_NR, 0);
+    HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
+    //send_CAN(MID_FAULT_NR, 0);
 	CheckFaultNR();
 	DecrementHeartbeats();
     CheckHeartbeats();
