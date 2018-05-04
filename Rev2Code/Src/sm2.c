@@ -1,6 +1,6 @@
 #include "sm2.h"
 #include <assert.h>
-#define DEBUG
+// #define DEBUG // why is brendan like this
 void MakeStateMachine(StateMachine *machine, int num_states, int num_events)
 {
 	machine->initialized_ = 0;

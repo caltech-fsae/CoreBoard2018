@@ -7,7 +7,7 @@
 
 #include "init_sm.h"
 
-#define NUM_EVENTS 14
+#define NUM_EVENTS 15
 #define NUM_STATES 6
 
 int WAIT_HEARTBEATS;
@@ -30,7 +30,8 @@ E_APPS_FLT,          // APPS asserted non-resettable fault
 E_BSE_FLT,           // BSE asserted non-resettable fault
 E_AMS_FLT,            // BMS asserted non-resettable fault
 E_NO_RST_FLT,
-E_BOARDS_LIVE;        // all boards sent a heartbeat
+E_BOARDS_LIVE,        // all boards sent a heartbeat
+E_CLR_RST_FLT;        // resettable fault cleared, can go back to wait driver
 
 void initialize_state_machine(StateMachine *sm)
 {
@@ -58,6 +59,7 @@ void initialize_state_machine(StateMachine *sm)
 	E_AMS_FLT = MakeEvent(sm);            // BMS asserted non-resettable fault
 	E_NO_RST_FLT = MakeEvent(sm);
 	E_BOARDS_LIVE = MakeEvent(sm);
+	E_CLR_RST_FLT = MakeEvent(sm);
 
 	InitStateMachine(sm, WAIT_HEARTBEATS);
 	    // machine, state, event, next_state, function
@@ -70,13 +72,14 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, WAIT_HEARTBEATS, E_PWR_80,               WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_RST_FLT,              WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_BPPC_FLT,             WAIT_HEARTBEATS,  &do_nothing);
-	    AddEvent(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_NO_RST_FLT,           NO_RST_FAULT,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_IMD_FLT,              WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_BSPD_FLT,             WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_APPS_FLT,             WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_BSE_FLT,              WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_AMS_FLT,              WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_CLR_RST_FLT,          WAIT_HEARTBEATS,  &do_nothing);
 
 	    //STATE: WAIT_DRIVER
 	    AddEvent(sm, WAIT_DRIVER, E_START,                WAIT_DRIVER,  &do_nothing);
@@ -93,6 +96,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, WAIT_DRIVER, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, WAIT_DRIVER, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, WAIT_DRIVER, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, WAIT_DRIVER, E_CLR_RST_FLT,          WAIT_DRIVER,  &do_nothing);
 
 	    //STATE: DRIVE
 	    AddEvent(sm, DRIVE, E_START,                WAIT_DRIVER,  &END_DRIVE);
@@ -109,6 +113,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, DRIVE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, DRIVE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, DRIVE, E_BOARDS_LIVE,          DRIVE,  &do_nothing);
+	    AddEvent(sm, DRIVE, E_CLR_RST_FLT,          DRIVE,  &do_nothing);
+
 
 	    //STATE: START_BRAKE
 	    AddEvent(sm, START_BRAKE, E_START,                DRIVE,        &RTDS);
@@ -125,12 +131,13 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, START_BRAKE, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, START_BRAKE, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, START_BRAKE, E_BOARDS_LIVE,          START_BRAKE,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_CLR_RST_FLT,          START_BRAKE,  &do_nothing);
 
 	    //STATE: RST_FAULT
 	    AddEvent(sm, RST_FAULT, E_START,                RST_FAULT,    &do_nothing);
 	    AddEvent(sm, RST_FAULT, E_PEDAL_ACEL,           RST_FAULT,    &do_nothing);
 	    AddEvent(sm, RST_FAULT, E_PEDAL_BRAKE_RELEASED, RST_FAULT,    &PEDAL_BRAKE_RELEASED);
-	    AddEvent(sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   WAIT_HEARTBEATS,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, RST_FAULT, E_PEDAL_BRAKE_PUSHED,   RST_FAULT,    &PEDAL_BRAKE_PUSHED);
 	    AddEvent(sm, RST_FAULT, E_PWR_80,               RST_FAULT,    &PWR_80);
 	    AddEvent(sm, RST_FAULT, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_BPPC_FLT,             RST_FAULT,    &do_nothing);
@@ -141,6 +148,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  &do_nothing);
 
 
 	    //STATE: NO_RST_FAULT
@@ -158,5 +166,6 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, NO_RST_FAULT, E_BSE_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
 	    AddEvent(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
 	    AddEvent(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_CLR_RST_FLT,          NO_RST_FAULT,  &do_nothing);
 
 }

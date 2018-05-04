@@ -23,7 +23,7 @@
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
 #define MAX_THROTTLE_VAL 0xFFFF // ask David + Tyler
-#define RESET_START 1000;
+#define RESET_START 500;
 #define RESET_FLT_CNT 100;
 
 #define START_GPIO_Port			GPIOE
@@ -81,7 +81,8 @@ E_APPS_FLT,          // APPS asserted non-resettable fault
 E_BSE_FLT,           // BSE asserted non-resettable fault
 E_AMS_FLT,            // BMS asserted non-resettable fault
 E_NO_RST_FLT,
-E_BOARDS_LIVE;        // all boards sent a heartbeat
+E_BOARDS_LIVE,
+E_CLR_RST_FLT;
 
 
 void mainloop();
