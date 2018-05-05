@@ -18,6 +18,7 @@ int flt_r_counter = RESET_FLT_CNT;
 int flt_nr_counter = RESET_FLT_CNT;
 int button_pressed = 0;
 int first_run = 1;
+int send_torque = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 enum Boards {
 	BMS_HEARTBEAT = 0,
@@ -115,28 +116,13 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	}
 		    	else if (type == MID_THROTTLE)
 		    	{
-		    		if (throttle_pressed && !brake_pressed) {
+		    		if (throttle_pressed && !brake_pressed && send_torque) {
 		    			throttle_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
 		    		} else
 		    		{
 		    		    throttle_val = 0;
 		    		}
-
-		    		//throttle_val = throttle_pressed ? (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL) : 0;
 		    	}
-		    	/*else if (type == MID_BRAKE)
-		    	{
-		    		brake_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
-		    		if (brake_val > PRESSED)
-		    		{
-		    			throttle_val = 0;
-		    			RunEvent(&sm, E_PEDAL_BRAKE_PUSHED);
-		    		}
-		    		else
-		    		{
-		    			RunEvent(&sm, E_PEDAL_BRAKE_RELEASED);
-		    		}
-		    	}*/
 		    	else if (type == MID_PEDAL_STATUS)
 		    	{
 		    		brake_pressed = message & 1;
@@ -161,7 +147,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 }
 
 int CheckHeartbeats() {
-    if (/*heartbeat_counter[0] <= 0 ||*/ heartbeat_counter[1] <= 0 ||  /* heartbeat_counter[2] <= 0 || */ heartbeat_counter[3] <= 0)
+    if (/*heartbeat_counter[BMS_HEARTBEAT] <= 0 ||*/ heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 ||  heartbeat_counter[MC_HEARTBEAT] <= 0 || heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
     	RunEvent(&sm, E_NO_RST_FLT);
     }
@@ -171,22 +157,25 @@ void DecrementHeartbeats() {
 	// decrement all elements of heart beat array
 		// heartbeat_counter[BMS_HEARTBEAT]--;
 		heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
-		//heartbeat_counter[MC_HEARTBEAT]--;
+		heartbeat_counter[MC_HEARTBEAT]--;
 		heartbeat_counter[IO_HEARTBEAT]--;
 }
 
 void CheckFaultNR() {
-	 if (!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
+	if(!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
 	{
-    	if (flt_nr_counter > 0)
-	    {
-	       flt_nr_counter--;
-	    }
-	    else if (flt_nr_counter <= 0)
-	    {
-	       	RunEvent(&sm, E_NO_RST_FLT);
-	    }
+		WriteAUXLED(0,1);
+		if (flt_nr_counter > 0) {
+			flt_nr_counter--;
+		}
+		else {
+		    RunEvent(&sm, E_NO_RST_FLT);
+		}
+	} else {
+		WriteAUXLED(0,0);
+		flt_nr_counter = RESET_FLT_CNT;
 	}
+
 }
 
 int PulledFaultResettable() {
@@ -203,7 +192,7 @@ int PulledFaultResettable() {
 		}
 	}
 	else {
-		flt_nr_counter = RESET_FLT_CNT;
+		flt_r_counter = RESET_FLT_CNT;
 		return 0;
 	}
 }
@@ -341,16 +330,18 @@ void ToggleAUXLED(uint8_t led)
 }
 
 void WaitHeartbeatsFunc() {
+	send_torque = 0;
 	if(HAL_GetTick() > 1000) {
-		//CheckFaultNR();
+		CheckFaultNR();
 	}
 	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
 	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
-	DecrementHeartbeats();
+	// DecrementHeartbeats();
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || */ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0  || /* init_heartbeat[MC_HEARTBEAT] == 0 || */ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || */ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0  || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 		return;
 	}
@@ -361,13 +352,15 @@ void WaitHeartbeatsFunc() {
 	CheckFaultResettable();
 }
 void WaitDriverFunc() {
+	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
 	CheckFaultResettable();
 	PEDAL_ACEL();
 }
-void StartBreakFunc() {
+void StartBrakeFunc() {
+	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
@@ -376,6 +369,7 @@ void StartBreakFunc() {
 	PEDAL_ACEL();
 }
 void DriveFunc(){
+	send_torque = 1;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
@@ -384,6 +378,7 @@ void DriveFunc(){
     CheckStartButton();
 }
 void RstFaultFunc(){
+	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
@@ -391,6 +386,7 @@ void RstFaultFunc(){
 	PEDAL_ACEL();
 }
 void NoRstFaultFunc(){
+	send_torque = 0;
     HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
     send_CAN(MID_FAULT_NR, 0);
 	DecrementHeartbeats();

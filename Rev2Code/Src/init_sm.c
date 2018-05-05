@@ -39,7 +39,7 @@ void initialize_state_machine(StateMachine *sm)
 
 	WAIT_HEARTBEATS = MakeState(sm, &WaitHeartbeatsFunc);
 	WAIT_DRIVER = MakeState(sm, &WaitDriverFunc);
-	START_BRAKE = MakeState(sm, &StartBreakFunc);
+	START_BRAKE = MakeState(sm, &StartBrakeFunc);
 	DRIVE = MakeState(sm, &DriveFunc);
 	RST_FAULT = MakeState(sm, &RstFaultFunc);
 	NO_RST_FAULT = MakeState(sm, &NoRstFaultFunc);

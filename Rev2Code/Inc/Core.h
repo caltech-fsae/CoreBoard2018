@@ -98,7 +98,7 @@ void ToggleAUXLED(uint8_t led);
 //STATE FUNCTIONS OH BOY OH BOY ====================================
 void WaitHeartbeatsFunc();
 void WaitDriverFunc();
-void StartBreakFunc();
+void StartBrakeFunc();
 void DriveFunc();
 void RstFaultFunc();
 void NoRstFaultFunc();

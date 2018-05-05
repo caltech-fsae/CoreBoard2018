@@ -35,6 +35,7 @@ void RTDS()
 	//assert RTDS GPIO active
 	HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_SET);
 	HAL_TIM_Base_Start_IT(&htim3); // starts timer, when timer interrupt occurs, will reset RTDS sound
+	                               // comment out this line see if it keeps playing first
 }
 // Functions for state transitions. Takes in CAN message and current state. Function names in form of SmState_Event.
 void PEDAL_ACEL()

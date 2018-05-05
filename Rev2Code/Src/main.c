@@ -121,7 +121,9 @@ int main(void)
   AddTask(&schedule, &assert_FLT_lines, 77);
   Init_MyCAN();
 
-  //HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(RTDS_GPIO_Port, RTDS_Pin, GPIO_PIN_RESET);
+  HAL_TIM_Base_Start_IT(&htim3);
+
   WriteAUXLED(0, 0);
   WriteAUXLED(1, 0);
   WriteAUXLED(2, 0);
