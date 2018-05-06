@@ -17,6 +17,7 @@ int start_button_counter = RESET_START;
 int flt_r_counter = RESET_FLT_CNT;
 int flt_nr_counter = RESET_FLT_CNT;
 int button_pressed = 0;
+int current = 0;
 int first_run = 1;
 int send_torque = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
@@ -203,20 +204,27 @@ void CheckFaultResettable(){
 }
 
 int CheckStartButton() {
-    if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter > 0)
+
+	current = HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin);
+
+    if (current != button_pressed) // if the current button state does not match the stored state, start debounce
     {
-    	start_button_counter--;
+    	if (start_button_counter > 0) {
+    	   start_button_counter--; // debouncing
+    	}
+    	else { // state was different for at least RESET_START calls to this function
+    		if (current == 1) { // button was pressed, need to run start event
+    		   RunEvent(&sm, E_START);
+    		   button_pressed = 1; // button was pressed, must be released for at least the debounce time
+    		} else {
+    			button_pressed = 0; // button was released for the debounce time, a new button press can now be registered
+    		}
+    		start_button_counter = RESET_START;
+    	}
     }
-	else if (HAL_GPIO_ReadPin(START_GPIO_Port, START_Pin) && start_button_counter <= 0 && !button_pressed)
-	{
-		RunEvent(&sm, E_START);
-		button_pressed = 1; // button was pressed, must be released to register next press
-		start_button_counter = RESET_START;
-	}
 	else
 	{
-		start_button_counter = RESET_START;
-		button_pressed = 0;
+		start_button_counter = RESET_START; // so that random noise doesn't eventually decrement the counter down
 	}
 }
 
