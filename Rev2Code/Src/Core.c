@@ -349,7 +349,7 @@ void WaitHeartbeatsFunc() {
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
 	// DecrementHeartbeats();
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || */ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0  || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || */ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 		return;
 	}

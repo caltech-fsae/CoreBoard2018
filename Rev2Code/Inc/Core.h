@@ -90,6 +90,7 @@ void send_heartbeat();
 void send_state();
 void get_CAN();
 void assert_FLT_lines();
+StateMachine sm;
 
 
 void WriteAUXLED(uint8_t led, uint8_t state);

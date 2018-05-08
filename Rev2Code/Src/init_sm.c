@@ -148,7 +148,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
-	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  &return_to_previous_state);
 
 
 	    //STATE: NO_RST_FAULT

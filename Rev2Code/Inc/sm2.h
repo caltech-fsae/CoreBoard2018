@@ -22,6 +22,7 @@ typedef struct transition
 typedef struct {
 	int initialized_;
 	StateId current_state_;
+	StateId previous_state_;
 	int num_states_;
 	int num_events_;
 	State *states_;

@@ -18,6 +18,14 @@
 
 extern uint16_t throttle_val;
 
+
+void return_to_previous_state() {
+	//I'm so so sorry. This is why God made private variables
+	StateId temp = sm.current_state_;
+	sm.current_state_ = sm.previous_state_;
+	sm.previous_state_ = temp;
+}
+
 void RESET_FAULTS()
 {
 	send_CAN(MID_RESET_FAULTS, 0);

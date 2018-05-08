@@ -57,7 +57,6 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-StateMachine sm;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

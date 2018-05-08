@@ -51,6 +51,7 @@ void PWR_80();
 //below functions will not use send_CAN
 
 void do_nothing();
+void return_to_previous_state();
 
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();

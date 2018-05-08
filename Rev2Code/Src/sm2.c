@@ -17,6 +17,7 @@ void InitStateMachine(StateMachine *machine, StateId start_state) {
 	assert(machine->initialized_ == 0);
 #endif // DEBUG
 	machine->initialized_ = 1;
+	machine->previous_state_ = start_state;
 	machine->current_state_ = start_state;
 }
 
@@ -55,8 +56,12 @@ void RunEvent(StateMachine *machine, EventId event)
 #ifdef DEBUG
 	assert(event < machine->event_index_);
 #endif  // DEBUG
-	machine->table_[(machine->current_state_) * machine->num_events_ + event].function_();
-	machine->current_state_ = machine->table_[(machine->current_state_) * machine->num_events_ + event].destination_state_;
+	StateId temp = machine->current_state_;
+	machine->current_state_ = machine->table_[temp * machine->num_events_ + event].destination_state_;
+	machine->table_[temp * machine->num_events_ + event].function_();
+	if(machine->current_state_ != temp) {
+		machine->previous_state_ = temp;
+	}
 }
 
 
