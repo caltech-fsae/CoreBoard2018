@@ -94,6 +94,7 @@ void send_state();
 void get_CAN();
 void assert_FLT_lines();
 StateMachine sm;
+int precharge_complete;
 
 
 void WriteAUXLED(uint8_t led, uint8_t state);

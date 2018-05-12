@@ -25,13 +25,12 @@ void StartPrecharge() {
 	}
 }
 
-void send_stop_drive() {
-	send_FLT_CAN();
-	send_CAN(MID_END_DRIVE, 0);
+void SetFinishPrecharge() {
+	precharge_complete = 1;
 }
 
 void ExitFault() {
-	if(sm.current_state_ != PRECHARGE) {
+	if(sm.previous_state_ != PRECHARGE) {
 		ReturnToPreviousState(&sm);
 	}
 }

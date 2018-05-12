@@ -11,6 +11,7 @@ extern StateMachine sm;
 uint16_t throttle_val = 0;
 uint16_t brake_val = 0;
 int brake_pressed = 0;
+int precharge_complete = 0;
 int precharging = 0;
 int throttle_pressed = 1;
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
@@ -47,8 +48,10 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		init_heartbeat[BMS_HEARTBEAT] = 1;
 		    		heartbeat_counter[BMS_HEARTBEAT] = RESET_HEARTBEAT;
 		    	} else if (type == MID_PRECHARGE_STATUS) {
-		    			precharge_start |= (message & 1);
-			    		precharging = (message & 1);
+		    			precharge_start |= message;
+			    		precharging = message;
+			    		ToggleAUXLED(1);
+			    		WriteAUXLED(2, precharging);
 		    	}
 		    	break;
 		    case (int) BID_SHUTDOWN:
@@ -122,7 +125,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	else if (type == MID_THROTTLE)
 		    	{
 		    		if (throttle_pressed && !brake_pressed && send_torque) {
-		    			throttle_val = (uint16_t) (((float) message)/(0xFFFF)*MAX_THROTTLE_VAL);
+		    			throttle_val = (uint16_t) (((float) message)/(0xFFF)*MAX_THROTTLE_VAL);
 		    		} else
 		    		{
 		    		    throttle_val = 0;
@@ -321,6 +324,19 @@ void WriteAUXLED(uint8_t led, uint8_t state)
 	}
 }
 
+void send_stop_drive() {
+	precharge_start = 0;
+	//
+	if(precharging) {
+		can_msg_t can_msg;
+		CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_END_DRIVE), 0);
+		CAN_queue_transmit(&can_msg);
+	} else {
+		WriteAUXLED(3,0);
+	}
+}
+
+
 void CheckPrecharging() {
 	if(precharge_start && !precharging)
 		RunEvent(&sm, E_PRECHARGE_FINISHED);
@@ -351,7 +367,7 @@ void WaitHeartbeatsFunc() {
 	if(HAL_GetTick() > 1000) {
 		CheckFaultNR();
 	}
-	if(HAL_GetTick() > 2000) {
+	if(HAL_GetTick() > 4200) {
 		RunEvent(&sm, E_NO_RST_FLT);
 
 	}
@@ -370,12 +386,14 @@ void WaitHeartbeatsFunc() {
 	CheckHeartbeats();
 	CheckFaultResettable();
 }
+
 void WaitDriverFunc() {
 	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
 	CheckFaultResettable();
+	send_stop_drive();
 	PEDAL_ACEL();
 }
 void StartBrakeFunc() {
@@ -385,6 +403,7 @@ void StartBrakeFunc() {
 	CheckHeartbeats();
 	CheckFaultResettable();
 	CheckStartButton();
+	send_stop_drive();
 	PEDAL_ACEL();
 }
 void DriveFunc(){
@@ -403,6 +422,7 @@ void RstFaultFunc(){
 	CheckHeartbeats();
 	PulledFaultResettable() ? 0 : RunEvent(&sm, E_CLR_RST_FLT);
 	PEDAL_ACEL();
+	send_stop_drive();
 }
 void NoRstFaultFunc(){
 	send_torque = 0;
@@ -410,11 +430,13 @@ void NoRstFaultFunc(){
     send_CAN(MID_FAULT_NR, 0);
 	DecrementHeartbeats();
     CheckHeartbeats();
+	send_stop_drive();
 	CheckFaultResettable();
 	PEDAL_ACEL();
 }
 
 void PrechargeFunc() {
+	precharge_complete ? RunEvent(&sm, E_PRECHARGE_FINISHED) : 0;
 	send_torque = 0;
 	StartPrecharge();
 	CheckFaultNR();

@@ -117,23 +117,22 @@ void initialize_state_machine(StateMachine *sm)
 
 
 	    //STATE: PRECHARGE
-	    AddEvent(sm, PRECHARGE, E_START,                WAIT_DRIVER,  &send_stop_drive);
+	    AddEvent(sm, PRECHARGE, E_START,                WAIT_DRIVER,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PEDAL_ACEL,           PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PEDAL_BRAKE_RELEASED, PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PEDAL_BRAKE_PUSHED,   PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PWR_80,               PRECHARGE,  &do_nothing);
-	    AddEvent(sm, PRECHARGE, E_RST_FLT,              RST_FAULT,    &send_stop_drive);  //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_RST_FLT,              RST_FAULT,    &do_nothing);  //SEND STOP DRIVE
 	    AddEvent(sm, PRECHARGE, E_BPPC_FLT,             PRECHARGE,    &do_nothing);
-	    AddEvent(sm, PRECHARGE, E_NO_RST_FLT,           NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_NO_RST_FLT,           NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
 	    AddEvent(sm, PRECHARGE, E_IMD_FLT,              PRECHARGE, &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_BSPD_FLT,             PRECHARGE, &do_nothing);
-	    AddEvent(sm, PRECHARGE, E_APPS_FLT,             NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
-	    AddEvent(sm, PRECHARGE, E_BSE_FLT,              NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
-	    AddEvent(sm, PRECHARGE, E_AMS_FLT,              NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_APPS_FLT,             NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_BSE_FLT,              NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_AMS_FLT,              NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
 	    AddEvent(sm, PRECHARGE, E_BOARDS_LIVE,          PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_CLR_RST_FLT,          PRECHARGE,  &do_nothing);
-	    AddEvent(sm, PRECHARGE, E_PRECHARGE_FINISHED,   PRECHARGE_READY,  &do_nothing);
-
+	    AddEvent(sm, PRECHARGE, E_PRECHARGE_FINISHED,   PRECHARGE_READY,  &SetFinishPrecharge);
 
 	    //STATE: PRECHARGE_READY
 	    	    AddEvent(sm, PRECHARGE_READY, E_START,                DRIVE,  &RTDS);
@@ -141,14 +140,14 @@ void initialize_state_machine(StateMachine *sm)
 	    	    AddEvent(sm, PRECHARGE_READY, E_PEDAL_BRAKE_RELEASED, PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PEDAL_BRAKE_PUSHED,   PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PWR_80,               PRECHARGE_READY,  &do_nothing);
-	    	    AddEvent(sm, PRECHARGE_READY, E_RST_FLT,              RST_FAULT,    &send_stop_drive);  //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_RST_FLT,              RST_FAULT,    &do_nothing);  //SEND STOP DRIVE
 	    	    AddEvent(sm, PRECHARGE_READY, E_BPPC_FLT,             PRECHARGE_READY,    &do_nothing);
-	    	    AddEvent(sm, PRECHARGE_READY, E_NO_RST_FLT,           NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_NO_RST_FLT,           NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
 	    	    AddEvent(sm, PRECHARGE_READY, E_IMD_FLT,              PRECHARGE_READY, &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_BSPD_FLT,             PRECHARGE_READY, &do_nothing);
-	    	    AddEvent(sm, PRECHARGE_READY, E_APPS_FLT,             NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
-	    	    AddEvent(sm, PRECHARGE_READY, E_BSE_FLT,              NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
-	    	    AddEvent(sm, PRECHARGE_READY, E_AMS_FLT,              NO_RST_FAULT, &send_stop_drive); //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_APPS_FLT,             NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_BSE_FLT,              NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_AMS_FLT,              NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
 	    	    AddEvent(sm, PRECHARGE_READY, E_BOARDS_LIVE,          PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_CLR_RST_FLT,          PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PRECHARGE_FINISHED,   PRECHARGE_READY,  &do_nothing);
@@ -170,8 +169,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, RST_FAULT, E_BSE_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_AMS_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
-	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  		  &ExitFault);
-	    AddEvent(sm, RST_FAULT, E_PRECHARGE_FINISHED,          WAIT_DRIVER,  		  &ExitFault);
+	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  &ExitFault);
+	    AddEvent(sm, RST_FAULT, E_PRECHARGE_FINISHED,   RST_FAULT,    &do_nothing);
 
 
 	    //STATE: NO_RST_FAULT
@@ -190,6 +189,6 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, NO_RST_FAULT, E_AMS_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
 	    AddEvent(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
 	    AddEvent(sm, NO_RST_FAULT, E_CLR_RST_FLT,          NO_RST_FAULT,  &do_nothing);
-	    AddEvent(sm, NO_RST_FAULT, E_PRECHARGE_FINISHED,          NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_PRECHARGE_FINISHED,   NO_RST_FAULT,  &do_nothing);
 
 }

@@ -54,6 +54,7 @@ void send_stop_drive();
 void StartPrecharge();
 void do_nothing();
 void ExitFault();
+void SetFinishPrecharge();
 
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();
