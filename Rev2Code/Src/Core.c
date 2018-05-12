@@ -11,6 +11,7 @@ extern StateMachine sm;
 uint16_t throttle_val = 0;
 uint16_t brake_val = 0;
 int brake_pressed = 0;
+int precharging = 0;
 int throttle_pressed = 1;
 int heartbeat_counter[4] = {RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT, RESET_HEARTBEAT}; // bms shutdown mc io
 int start_button_counter = RESET_START;
@@ -45,6 +46,9 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		init_heartbeat[BMS_HEARTBEAT] = 1;
 		    		heartbeat_counter[BMS_HEARTBEAT] = RESET_HEARTBEAT;
+		    	} else if (type == MID_PRECHARGE_STATUS) {
+		    			precharge_start |= (message & 1);
+			    		precharging = (message & 1);
 		    	}
 		    	break;
 		    case (int) BID_SHUTDOWN:
@@ -148,7 +152,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 }
 
 int CheckHeartbeats() {
-    if (/*heartbeat_counter[BMS_HEARTBEAT] <= 0 ||*/ heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 ||  heartbeat_counter[MC_HEARTBEAT] <= 0 || heartbeat_counter[IO_HEARTBEAT] <= 0)
+    if (heartbeat_counter[BMS_HEARTBEAT] <= 0 || heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
     	RunEvent(&sm, E_NO_RST_FLT);
     }
@@ -317,6 +321,11 @@ void WriteAUXLED(uint8_t led, uint8_t state)
 	}
 }
 
+void CheckPrecharging() {
+	if(precharge_start && !precharging)
+		RunEvent(&sm, E_PRECHARGE_FINISHED);
+}
+
 void ToggleAUXLED(uint8_t led)
 {
 	// Toggles auxiliary LED (0, 1, 2, 3)
@@ -342,21 +351,23 @@ void WaitHeartbeatsFunc() {
 	if(HAL_GetTick() > 1000) {
 		CheckFaultNR();
 	}
-	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	if(HAL_GetTick() > 2000) {
+		RunEvent(&sm, E_NO_RST_FLT);
 
+	}
+	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
 	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
-	// DecrementHeartbeats();
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 || */ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
 	{
-		return;
 	}
 	else
 	{
 		RunEvent(&sm, E_BOARDS_LIVE);
 	}
+	CheckHeartbeats();
 	CheckFaultResettable();
 }
 void WaitDriverFunc() {
@@ -402,3 +413,24 @@ void NoRstFaultFunc(){
 	CheckFaultResettable();
 	PEDAL_ACEL();
 }
+
+void PrechargeFunc() {
+	send_torque = 0;
+	StartPrecharge();
+	CheckFaultNR();
+	DecrementHeartbeats();
+	CheckHeartbeats();
+	CheckFaultResettable();
+	CheckStartButton();
+	CheckPrecharging();
+}
+
+void PrechargeReadyFunc() {
+	send_torque = 0;
+	CheckFaultNR();
+	DecrementHeartbeats();
+	CheckHeartbeats();
+	CheckFaultResettable();
+	CheckStartButton();
+}
+

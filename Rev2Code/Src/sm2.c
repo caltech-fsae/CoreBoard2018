@@ -1,6 +1,9 @@
 #include "sm2.h"
 #include <assert.h>
 // #define DEBUG // why is brendan like this
+
+
+
 void MakeStateMachine(StateMachine *machine, int num_states, int num_events)
 {
 	machine->initialized_ = 0;
@@ -71,3 +74,10 @@ void RunState(StateMachine *machine) {
 #endif  // DEBUG
 	machine->states_[machine->current_state_].state_loop_();
 }
+
+void ReturnToPreviousState(StateMachine *machine) {
+	StateId temp = machine->current_state_;
+	machine->current_state_ = machine->previous_state_;
+	machine->previous_state_ = temp;
+}
+

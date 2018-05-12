@@ -47,11 +47,13 @@ void END_DRIVE();
 void RTDS();
 void PEDAL_ACEL();
 void PWR_80();
+void send_stop_drive();
 //above functions will use send_CAN
 //below functions will not use send_CAN
 
+void StartPrecharge();
 void do_nothing();
-void return_to_previous_state();
+void ExitFault();
 
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();

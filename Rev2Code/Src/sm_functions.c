@@ -13,17 +13,27 @@
 #include "tim.h"
 #include "stm32f4xx_hal.h"
 #include "Core.h"
+#include "init_sm.h"
 
 
 
 extern uint16_t throttle_val;
 
+void StartPrecharge() {
+	if(!precharge_start) {
+		send_CAN(MID_START_DRIVE, 0);
+	}
+}
 
-void return_to_previous_state() {
-	//I'm so so sorry. This is why God made private variables
-	StateId temp = sm.current_state_;
-	sm.current_state_ = sm.previous_state_;
-	sm.previous_state_ = temp;
+void send_stop_drive() {
+	send_FLT_CAN();
+	send_CAN(MID_END_DRIVE, 0);
+}
+
+void ExitFault() {
+	if(sm.current_state_ != PRECHARGE) {
+		ReturnToPreviousState(&sm);
+	}
 }
 
 void RESET_FAULTS()

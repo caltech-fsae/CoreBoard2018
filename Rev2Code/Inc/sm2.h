@@ -38,5 +38,6 @@ void AddEvent(StateMachine *machine, StateId origin_state, EventId event, StateI
 void InitStateMachine(StateMachine *machine, StateId start_state);
 void RunEvent(StateMachine *machine, EventId event);
 void RunState(StateMachine *machine);
+void ReturnToPreviousState(StateMachine *machine);
 
 #endif /* MACHINE_H_ */

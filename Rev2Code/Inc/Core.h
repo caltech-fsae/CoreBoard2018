@@ -61,6 +61,9 @@
 
 // Prototypes ------------------------------------------------------------------------------
 
+int precharging;
+int precharge_start;
+
 extern int WAIT_HEARTBEATS;
 extern int WAIT_DRIVER;
 extern int START_BRAKE;
@@ -103,5 +106,7 @@ void StartBrakeFunc();
 void DriveFunc();
 void RstFaultFunc();
 void NoRstFaultFunc();
+void PrechargeFunc();
+void PrechargeReadyFunc();
 
 #endif /* CORE_H_ */
