@@ -22,6 +22,7 @@ int button_pressed = 0;
 int current = 0;
 int first_run = 1;
 int send_torque = 0;
+charge_finish_time = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 enum Boards {
 	BMS_HEARTBEAT = 0,
@@ -336,10 +337,13 @@ void send_stop_drive() {
 	}
 }
 
-
 void CheckPrecharging() {
-	if(precharge_start && !precharging)
+	if(precharge_start && !precharging && !charge_finish_time) {
+		charge_finish_time = HAL_GetTick();
+	}
+	if(precharge_start && !precharging && charge_finish_time && HAL_GetTick() - charge_finish_time > 2000) {
 		RunEvent(&sm, E_PRECHARGE_FINISHED);
+	}
 }
 
 void ToggleAUXLED(uint8_t led)
@@ -388,6 +392,7 @@ void WaitHeartbeatsFunc() {
 }
 
 void WaitDriverFunc() {
+	charge_finish_time = 0;
 	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
@@ -416,6 +421,7 @@ void DriveFunc(){
     CheckStartButton();
 }
 void RstFaultFunc(){
+	charge_finish_time = 0;
 	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
@@ -424,6 +430,7 @@ void RstFaultFunc(){
 	PEDAL_ACEL();
 	send_stop_drive();
 }
+
 void NoRstFaultFunc(){
 	send_torque = 0;
     HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR

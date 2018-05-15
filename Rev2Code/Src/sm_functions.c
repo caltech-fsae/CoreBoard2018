@@ -19,6 +19,10 @@
 
 extern uint16_t throttle_val;
 
+void reset_precharge_timer() {
+	charge_finish_time = 0;
+}
+
 void StartPrecharge() {
 	if(!precharge_start) {
 		send_CAN(MID_START_DRIVE, 0);

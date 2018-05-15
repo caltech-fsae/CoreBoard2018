@@ -55,6 +55,7 @@ void StartPrecharge();
 void do_nothing();
 void ExitFault();
 void SetFinishPrecharge();
+void reset_precharge_timer();
 
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();
