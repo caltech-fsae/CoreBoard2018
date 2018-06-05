@@ -20,6 +20,7 @@
 #define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
 
 #define RESET_HEARTBEAT 1000
+#define STOP_IGNORING_NR_LINE 3000
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
 #define MAX_THROTTLE_VAL 0xFFFF // ask David + Tyler
@@ -110,5 +111,6 @@ void RstFaultFunc();
 void NoRstFaultFunc();
 void PrechargeFunc();
 void PrechargeReadyFunc();
+void HeartbeatsNoRstFunc();
 
 #endif /* CORE_H_ */

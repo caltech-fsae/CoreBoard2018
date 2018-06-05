@@ -22,8 +22,10 @@ int button_pressed = 0;
 int current = 0;
 int first_run = 1;
 int send_torque = 0;
-charge_finish_time = 0;
+int charge_finish_time = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
+int ignore_nr_line = 0;
+extern int ignore_nr_start_time;
 enum Boards {
 	BMS_HEARTBEAT = 0,
 	SHUTDOWN_HEARTBEAT = 1,
@@ -91,6 +93,9 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		{
 		    			RunEvent(&sm, E_RST_FLT);
 		    		}*/
+		    	} else if (type == MID_RESET_FAULTS)
+		    	{
+		    		RunEvent(&sm, E_NR_CLEARED);
 		    	}
 		    	break;
 		    case (int) BID_MOTOR_CONTROLLER:
@@ -116,7 +121,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		//               0bx0 = BPPC, R
 		    		if (CHECK_BIT(message, 0))
 		    		{
-		    		    RunEvent(&sm, E_BSPD_FLT); // NR FAULT
+		    		    RunEvent(&sm, E_BSPD_FLT); // NR AIRS FAULT THAT NEEDS TO BE "resettable"
 		    		}
 		    		else if (CHECK_BIT(message, 1))
 		    		{
@@ -158,7 +163,9 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 int CheckHeartbeats() {
     if (heartbeat_counter[BMS_HEARTBEAT] <= 0 || heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
-    	RunEvent(&sm, E_NO_RST_FLT);
+    	RunEvent(&sm, E_HEARTBEATS_FLT);
+    	// create new state which is transitioned to on E_HEARTBEATS_FLT which still keeps flt nr line low
+    	//
     }
 }
 
@@ -434,7 +441,14 @@ void RstFaultFunc(){
 
 void NoRstFaultFunc(){
 	send_torque = 0;
-    HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
+	if (!ignore_nr_line) {
+		HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
+	} else {
+		HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_RESET);
+		if (HAL_GetTick() - ignore_nr_start_time >= STOP_IGNORING_NR_LINE) {
+			ignore_nr_line = 0;
+		}
+	}
     send_CAN(MID_FAULT_NR, 0);
 	DecrementHeartbeats();
     CheckHeartbeats();
@@ -462,5 +476,22 @@ void PrechargeReadyFunc() {
 	CheckHeartbeats();
 	CheckFaultResettable();
 	CheckStartButton();
+}
+
+void HeartbeatsNoRstFunc() {
+	send_torque = 0;
+	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
+	send_CAN(MID_FAULT_NR, 0);
+	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
+	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
+	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
+	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
+	{
+	}
+	else
+	{
+		RunEvent(&sm, E_BOARDS_LIVE);
+	}
 }
 

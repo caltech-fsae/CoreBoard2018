@@ -18,6 +18,10 @@
 
 
 extern uint16_t throttle_val;
+extern int init_heartbeat[4];
+extern int heartbeat_counter[4];
+extern int ignore_nr_line;
+int ignore_nr_start_time;
 
 void reset_precharge_timer() {
 	charge_finish_time = 0;
@@ -90,6 +94,26 @@ void send_FLT_CAN()
 	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_TORQUE_COMMAND), 0);
 	CAN_queue_transmit(&can_msg);
 
+}
+
+void reset_init_heartbeats()
+{
+	init_heartbeat[0] = 0;
+	init_heartbeat[1] = 0;
+	init_heartbeat[2] = 0;
+	init_heartbeat[3] = 0;
+
+	heartbeat_counter[0] = RESET_HEARTBEAT;
+	heartbeat_counter[1] = RESET_HEARTBEAT;
+	heartbeat_counter[2] = RESET_HEARTBEAT;
+	heartbeat_counter[3] = RESET_HEARTBEAT;
+
+}
+
+void set_ignore_nr_line()
+{
+	ignore_nr_line = 1;
+	ignore_nr_start_time = HAL_GetTick();
 }
 
 void do_nothing()

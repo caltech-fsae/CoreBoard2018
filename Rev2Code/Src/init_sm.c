@@ -19,6 +19,7 @@ void initialize_state_machine(StateMachine *sm)
 	NO_RST_FAULT = MakeState(sm, &NoRstFaultFunc);
 	PRECHARGE = MakeState(sm, &PrechargeFunc);
 	PRECHARGE_READY = MakeState(sm, &PrechargeReadyFunc);
+	HEARTBEATS_NO_RST = MakeState(sm, &HeartbeatsNoRstFunc);
 
 
 	E_START = MakeEvent(sm);                // start button gpio active
@@ -37,6 +38,8 @@ void initialize_state_machine(StateMachine *sm)
 	E_BOARDS_LIVE = MakeEvent(sm);
 	E_CLR_RST_FLT = MakeEvent(sm);
 	E_PRECHARGE_FINISHED = MakeEvent(sm);
+	E_HEARTBEATS_FLT = MakeEvent(sm);
+	E_NR_CLEARED = MakeEvent(sm);
 
 	InitStateMachine(sm, WAIT_HEARTBEATS);
 	    // machine, state, event, next_state, function
@@ -58,6 +61,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, WAIT_HEARTBEATS, E_BOARDS_LIVE,          WAIT_DRIVER,      &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_CLR_RST_FLT,          WAIT_HEARTBEATS,  &do_nothing);
 	    AddEvent(sm, WAIT_HEARTBEATS, E_PRECHARGE_FINISHED,   WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_HEARTBEATS_FLT,       WAIT_HEARTBEATS,  &do_nothing);
+	    AddEvent(sm, WAIT_HEARTBEATS, E_NR_CLEARED,           WAIT_HEARTBEATS,  &do_nothing);
 
 
 	    //STATE: WAIT_DRIVER
@@ -77,6 +82,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, WAIT_DRIVER, E_BOARDS_LIVE,          WAIT_DRIVER,  &do_nothing);
 	    AddEvent(sm, WAIT_DRIVER, E_CLR_RST_FLT,          WAIT_DRIVER,  &do_nothing);
 	    AddEvent(sm, WAIT_DRIVER, E_PRECHARGE_FINISHED,          WAIT_DRIVER,  &do_nothing);
+	    AddEvent(sm, WAIT_DRIVER, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    AddEvent(sm, WAIT_DRIVER, E_NR_CLEARED,           WAIT_DRIVER,  &do_nothing);
 
 	    //STATE: DRIVE
 	    AddEvent(sm, DRIVE, E_START,                WAIT_DRIVER,  &END_DRIVE);
@@ -95,6 +102,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, DRIVE, E_BOARDS_LIVE,          DRIVE,  &do_nothing);
 	    AddEvent(sm, DRIVE, E_CLR_RST_FLT,          DRIVE,  &do_nothing);
 	    AddEvent(sm, DRIVE, E_PRECHARGE_FINISHED,          DRIVE,  &do_nothing);
+	    AddEvent(sm, DRIVE, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    AddEvent(sm, DRIVE, E_NR_CLEARED,           DRIVE,  &do_nothing);
 
 
 	    //STATE: START_BRAKE
@@ -114,6 +123,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, START_BRAKE, E_BOARDS_LIVE,          START_BRAKE,  &do_nothing);
 	    AddEvent(sm, START_BRAKE, E_CLR_RST_FLT,          START_BRAKE,  &do_nothing);
 	    AddEvent(sm, START_BRAKE, E_PRECHARGE_FINISHED,   START_BRAKE,  &do_nothing);
+	    AddEvent(sm, START_BRAKE, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    AddEvent(sm, START_BRAKE, E_NR_CLEARED,           START_BRAKE,  &do_nothing);
 
 
 	    //STATE: PRECHARGE
@@ -133,6 +144,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, PRECHARGE, E_BOARDS_LIVE,          PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_CLR_RST_FLT,          PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PRECHARGE_FINISHED,   PRECHARGE_READY,  &SetFinishPrecharge);
+	    AddEvent(sm, PRECHARGE, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_precharge_timer);
+	    AddEvent(sm, PRECHARGE, E_NR_CLEARED,           PRECHARGE,  &do_nothing);
 
 	    //STATE: PRECHARGE_READY
 	    	    AddEvent(sm, PRECHARGE_READY, E_START,                DRIVE,  &RTDS);
@@ -151,6 +164,8 @@ void initialize_state_machine(StateMachine *sm)
 	    	    AddEvent(sm, PRECHARGE_READY, E_BOARDS_LIVE,          PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_CLR_RST_FLT,          PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PRECHARGE_FINISHED,   PRECHARGE_READY,  &do_nothing);
+	    	    AddEvent(sm, PRECHARGE_READY, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    	    AddEvent(sm, PRECHARGE_READY, E_NR_CLEARED,           PRECHARGE_READY,  &do_nothing);
 
 
 
@@ -171,6 +186,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, RST_FAULT, E_BOARDS_LIVE,          RST_FAULT,    &do_nothing);
 	    AddEvent(sm, RST_FAULT, E_CLR_RST_FLT,          WAIT_DRIVER,  &ExitFault);
 	    AddEvent(sm, RST_FAULT, E_PRECHARGE_FINISHED,   RST_FAULT,    &do_nothing);
+	    AddEvent(sm, RST_FAULT, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    AddEvent(sm, RST_FAULT, E_NR_CLEARED,           RST_FAULT,  &do_nothing);
 
 
 	    //STATE: NO_RST_FAULT
@@ -190,5 +207,27 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, NO_RST_FAULT, E_BOARDS_LIVE,          NO_RST_FAULT,  &do_nothing);
 	    AddEvent(sm, NO_RST_FAULT, E_CLR_RST_FLT,          NO_RST_FAULT,  &do_nothing);
 	    AddEvent(sm, NO_RST_FAULT, E_PRECHARGE_FINISHED,   NO_RST_FAULT,  &do_nothing);
+	    AddEvent(sm, NO_RST_FAULT, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &reset_init_heartbeats);
+	    AddEvent(sm, NO_RST_FAULT, E_NR_CLEARED,           PRECHARGE_READY,  &do_nothing);
+
+	    //STATE: HEARTBEATS_NO_RST - is resettable, but needs to pull NR line bc needs to open airs
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_START,                HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_PEDAL_ACEL,           HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_PEDAL_BRAKE_RELEASED, HEARTBEATS_NO_RST,  &PEDAL_BRAKE_RELEASED);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_PEDAL_BRAKE_PUSHED,   HEARTBEATS_NO_RST,  &PEDAL_BRAKE_PUSHED);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_PWR_80,               HEARTBEATS_NO_RST,  &PWR_80);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_RST_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_BPPC_FLT,             HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_NO_RST_FLT,           HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_IMD_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_BSPD_FLT,             HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_APPS_FLT,             HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_BSE_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_AMS_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_BOARDS_LIVE,          NO_RST_FAULT,  &set_ignore_nr_line); // ????
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_CLR_RST_FLT,          HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_PRECHARGE_FINISHED,   HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &do_nothing);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_NR_CLEARED,           HEARTBEATS_NO_RST,  &do_nothing);
 
 }

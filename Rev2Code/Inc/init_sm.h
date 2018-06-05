@@ -12,8 +12,8 @@
 #include "Core.h"
 #include "sm2.h"
 
-#define NUM_EVENTS 16
-#define NUM_STATES 8
+#define NUM_EVENTS 18
+#define NUM_STATES 9
 
 int WAIT_HEARTBEATS;
 int WAIT_DRIVER;
@@ -23,6 +23,7 @@ int RST_FAULT;
 int NO_RST_FAULT;
 int PRECHARGE;
 int PRECHARGE_READY;
+int HEARTBEATS_NO_RST;
 
 int E_START,                // start button gpio active
 E_PEDAL_ACEL,           // acel pedal value changed enough for us to care about
@@ -39,7 +40,9 @@ E_AMS_FLT,            // BMS asserted non-resettable fault
 E_NO_RST_FLT,
 E_BOARDS_LIVE,        // all boards sent a heartbeat
 E_CLR_RST_FLT,       // resettable fault cleared, can go back to previous state
-E_PRECHARGE_FINISHED;	//precharge finished go to drive
+E_PRECHARGE_FINISHED,	//precharge finished go to drive
+E_HEARTBEATS_FLT, // heartbeats timed out, need to pull NR line in a resettable fashion lol why do we not have three types of faults :(
+E_NR_CLEARED;     // shutdown saying all NR faults have cleared, leave NR state if true
 
 void initialize_state_machine(StateMachine *sm);
 
