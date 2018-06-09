@@ -93,9 +93,6 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		{
 		    			RunEvent(&sm, E_RST_FLT);
 		    		}*/
-		    	} else if (type == MID_RESET_FAULTS)
-		    	{
-		    		RunEvent(&sm, E_NR_CLEARED);
 		    	}
 		    	break;
 		    case (int) BID_MOTOR_CONTROLLER:
@@ -160,7 +157,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 	}
 }
 
-int CheckHeartbeats() {
+void CheckHeartbeats() {
     if (heartbeat_counter[BMS_HEARTBEAT] <= 0 || heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
     	RunEvent(&sm, E_HEARTBEATS_FLT);
@@ -178,20 +175,19 @@ void DecrementHeartbeats() {
 }
 
 void CheckFaultNR() {
-	if(!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
-	{
-		WriteAUXLED(0,1);
-		if (flt_nr_counter > 0) {
-			flt_nr_counter--;
+		if(!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
+		{
+			WriteAUXLED(0,1);
+			if (flt_nr_counter > 0) {
+				flt_nr_counter--;
+			}
+			else {
+				RunEvent(&sm, E_NO_RST_FLT);
+			}
+		} else {
+			WriteAUXLED(0,0);
+			flt_nr_counter = RESET_FLT_CNT;
 		}
-		else {
-		    RunEvent(&sm, E_NO_RST_FLT);
-		}
-	} else {
-		WriteAUXLED(0,0);
-		flt_nr_counter = RESET_FLT_CNT;
-	}
-
 }
 
 int PulledFaultResettable() {
@@ -441,14 +437,7 @@ void RstFaultFunc(){
 
 void NoRstFaultFunc(){
 	send_torque = 0;
-	if (!ignore_nr_line) {
-		HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
-	} else {
-		HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_RESET);
-		if (HAL_GetTick() - ignore_nr_start_time >= STOP_IGNORING_NR_LINE) {
-			ignore_nr_line = 0;
-		}
-	}
+	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
     send_CAN(MID_FAULT_NR, 0);
 	DecrementHeartbeats();
     CheckHeartbeats();
@@ -495,3 +484,24 @@ void HeartbeatsNoRstFunc() {
 	}
 }
 
+void AttemptRstFunc() {
+	send_torque = 0;
+
+	if (HAL_GetTick() - ignore_nr_start_time >= STOP_IGNORING_NR_LINE) {
+		ignore_nr_line = 0;
+	}
+
+	if (!ignore_nr_line) {
+		for(int i = 150; i < 0; i = i - 1){
+			CheckFaultNR();
+	    }
+		RunEvent(&sm, E_CLR_NO_RST_FLT);
+	}
+
+	attempt_driver_reset();
+	DecrementHeartbeats();
+    CheckHeartbeats();
+	send_stop_drive();
+	CheckFaultResettable();
+	PEDAL_ACEL();
+}

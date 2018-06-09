@@ -86,7 +86,10 @@ E_BSE_FLT,           // BSE asserted non-resettable fault
 E_AMS_FLT,            // BMS asserted non-resettable fault
 E_NO_RST_FLT,
 E_BOARDS_LIVE,
-E_CLR_RST_FLT;
+E_CLR_RST_FLT,
+E_PRECHARGE_FINISHED,
+E_HEARTBEATS_FLT,
+E_CLR_NO_RST_FLT;
 
 
 void mainloop();
@@ -94,6 +97,7 @@ void send_heartbeat();
 void send_state();
 void get_CAN();
 void assert_FLT_lines();
+void CheckHeartbeats();
 StateMachine sm;
 int precharge_complete;
 int charge_finish_time;
@@ -112,5 +116,5 @@ void NoRstFaultFunc();
 void PrechargeFunc();
 void PrechargeReadyFunc();
 void HeartbeatsNoRstFunc();
-
+void AttemptRstFunc();
 #endif /* CORE_H_ */

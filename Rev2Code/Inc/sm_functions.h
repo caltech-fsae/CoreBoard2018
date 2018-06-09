@@ -57,7 +57,9 @@ void ExitFault();
 void SetFinishPrecharge();
 void reset_precharge_timer();
 void reset_init_heartbeats();
+void attempt_driver_reset();
 void set_ignore_nr_line();
+void reset_ignore_nr_line();
 
 void PEDAL_BRAKE_PUSHED();
 void PEDAL_BRAKE_RELEASED();

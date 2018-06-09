@@ -73,6 +73,11 @@ void PWR_80()
 	send_CAN(MID_REDUCE_PWR, 0);
 }
 
+void attempt_driver_reset()
+{
+    send_CAN(MID_ATTEMPT_RESET, 0);
+}
+
 void send_CAN(uint16_t MID, uint16_t message)
 {
 	// helper function for all the other functions, also for transitions that do nothing but change state
@@ -114,6 +119,11 @@ void set_ignore_nr_line()
 {
 	ignore_nr_line = 1;
 	ignore_nr_start_time = HAL_GetTick();
+}
+
+void reset_ignore_nr_line()
+{
+	ignore_nr_line = 0;
 }
 
 void do_nothing()

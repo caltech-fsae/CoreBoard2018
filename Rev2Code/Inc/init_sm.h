@@ -24,6 +24,7 @@ int NO_RST_FAULT;
 int PRECHARGE;
 int PRECHARGE_READY;
 int HEARTBEATS_NO_RST;
+int ATTEMPT_RST;
 
 int E_START,                // start button gpio active
 E_PEDAL_ACEL,           // acel pedal value changed enough for us to care about
@@ -42,7 +43,7 @@ E_BOARDS_LIVE,        // all boards sent a heartbeat
 E_CLR_RST_FLT,       // resettable fault cleared, can go back to previous state
 E_PRECHARGE_FINISHED,	//precharge finished go to drive
 E_HEARTBEATS_FLT, // heartbeats timed out, need to pull NR line in a resettable fashion lol why do we not have three types of faults :(
-E_NR_CLEARED;     // shutdown saying all NR faults have cleared, leave NR state if true
+E_CLR_NO_RST_FLT;     // shutdown saying all NR faults have cleared, leave NR state if true
 
 void initialize_state_machine(StateMachine *sm);
 
