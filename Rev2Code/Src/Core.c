@@ -158,7 +158,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 }
 
 void CheckHeartbeats() {
-    if (heartbeat_counter[BMS_HEARTBEAT] <= 0 || heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
+    if (/*heartbeat_counter[BMS_HEARTBEAT] <= 0 ||*/ heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
     	RunEvent(&sm, E_HEARTBEATS_FLT);
     	// create new state which is transitioned to on E_HEARTBEATS_FLT which still keeps flt nr line low
@@ -170,7 +170,7 @@ void DecrementHeartbeats() {
 	// decrement all elements of heart beat array
 		// heartbeat_counter[BMS_HEARTBEAT]--;
 		heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
-		heartbeat_counter[MC_HEARTBEAT]--;
+		//heartbeat_counter[MC_HEARTBEAT]--;
 		heartbeat_counter[IO_HEARTBEAT]--;
 }
 
@@ -379,12 +379,12 @@ void WaitHeartbeatsFunc() {
 
 	}
 
-	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	//init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
-	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
+	//init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 ||*/ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 	}
 	else
@@ -471,11 +471,11 @@ void HeartbeatsNoRstFunc() {
 	send_torque = 0;
 	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
 	send_CAN(MID_FAULT_NR, 0);
-	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	//init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
-	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
+	//init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
-	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 ||*/ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 	}
 	else
