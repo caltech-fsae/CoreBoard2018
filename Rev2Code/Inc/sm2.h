@@ -2,7 +2,7 @@
 #define MACHINE_H_
 
 #include <stdlib.h>
-
+#define DEBUG
 typedef int StateId;
 
 typedef int EventId;

@@ -13,7 +13,7 @@
 #include "sm2.h"
 
 #define NUM_EVENTS 18
-#define NUM_STATES 9
+#define NUM_STATES 10
 
 int WAIT_HEARTBEATS;
 int WAIT_DRIVER;

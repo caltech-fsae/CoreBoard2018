@@ -53,8 +53,8 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	} else if (type == MID_PRECHARGE_STATUS) {
 		    			precharge_start |= message;
 			    		precharging = message;
-			    		ToggleAUXLED(1);
-			    		WriteAUXLED(2, precharging);
+			    		//ToggleAUXLED(1);
+			    		//WriteAUXLED(2, precharging);
 		    	}
 		    	break;
 		    case (int) BID_SHUTDOWN:
@@ -158,7 +158,7 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 }
 
 void CheckHeartbeats() {
-    if (/*heartbeat_counter[BMS_HEARTBEAT] <= 0 ||*/ heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || /* heartbeat_counter[MC_HEARTBEAT] <= 0 ||*/ heartbeat_counter[IO_HEARTBEAT] <= 0)
+    if (heartbeat_counter[BMS_HEARTBEAT] <= 0 || heartbeat_counter[SHUTDOWN_HEARTBEAT] <= 0 || heartbeat_counter[MC_HEARTBEAT] <= 0 || heartbeat_counter[IO_HEARTBEAT] <= 0)
     {
     	RunEvent(&sm, E_HEARTBEATS_FLT);
     	// create new state which is transitioned to on E_HEARTBEATS_FLT which still keeps flt nr line low
@@ -168,24 +168,23 @@ void CheckHeartbeats() {
 
 void DecrementHeartbeats() {
 	// decrement all elements of heart beat array
-		// heartbeat_counter[BMS_HEARTBEAT]--;
+		heartbeat_counter[BMS_HEARTBEAT]--;
 		heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
-		//heartbeat_counter[MC_HEARTBEAT]--;
+		heartbeat_counter[MC_HEARTBEAT]--;
 		heartbeat_counter[IO_HEARTBEAT]--;
 }
 
 void CheckFaultNR() {
 		if(!HAL_GPIO_ReadPin(FLT_NR_GPIO_Port, FLT_NR_Pin))
 		{
-			WriteAUXLED(0,1);
 			if (flt_nr_counter > 0) {
 				flt_nr_counter--;
 			}
 			else {
+				flt_nr_counter = RESET_FLT_CNT;
 				RunEvent(&sm, E_NO_RST_FLT);
 			}
 		} else {
-			WriteAUXLED(0,0);
 			flt_nr_counter = RESET_FLT_CNT;
 		}
 }
@@ -336,7 +335,7 @@ void send_stop_drive() {
 		CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_END_DRIVE), 0);
 		CAN_queue_transmit(&can_msg);
 	} else {
-		WriteAUXLED(3,0);
+		//WriteAUXLED(3,0);
 	}
 }
 
@@ -370,25 +369,28 @@ void ToggleAUXLED(uint8_t led)
 }
 
 void WaitHeartbeatsFunc() {
+	ToggleAUXLED(3);
 	send_torque = 0;
 	if(HAL_GetTick() > 1000) {
+		ToggleAUXLED(1);
 		CheckFaultNR();
 	}
-	if(HAL_GetTick() > 4200) {
+	if(HAL_GetTick() > 10000) {
+		WriteAUXLED(2, 1);
 		RunEvent(&sm, E_NO_RST_FLT);
-
 	}
 
-	//init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
-	//init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
+	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
 	//TODO(@bgberr): Should check for heartbeats of live boards even during this startup
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 ||*/ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 	}
 	else
 	{
+		WriteAUXLED(3, 1);
 		RunEvent(&sm, E_BOARDS_LIVE);
 	}
 	CheckHeartbeats();
@@ -436,6 +438,8 @@ void RstFaultFunc(){
 }
 
 void NoRstFaultFunc(){
+	WriteAUXLED(0, 1);
+	CheckStartButton();
 	send_torque = 0;
 	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
     send_CAN(MID_FAULT_NR, 0);
@@ -471,11 +475,11 @@ void HeartbeatsNoRstFunc() {
 	send_torque = 0;
 	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_SET); //Pull Fault NR
 	send_CAN(MID_FAULT_NR, 0);
-	//init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
+	init_heartbeat[BMS_HEARTBEAT] ? heartbeat_counter[BMS_HEARTBEAT]-- : 0;
 	init_heartbeat[SHUTDOWN_HEARTBEAT] ? heartbeat_counter[SHUTDOWN_HEARTBEAT]--  : 0;
-	//init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
+	init_heartbeat[MC_HEARTBEAT] ? heartbeat_counter[MC_HEARTBEAT]-- : 0;
 	init_heartbeat[IO_HEARTBEAT] ? heartbeat_counter[IO_HEARTBEAT]-- : 0;
-	if  (/*init_heartbeat[BMS_HEARTBEAT] == 0 ||*/ init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 ||/* init_heartbeat[MC_HEARTBEAT] == 0 ||*/ init_heartbeat[IO_HEARTBEAT] == 0)
+	if  (init_heartbeat[BMS_HEARTBEAT] == 0 || init_heartbeat[SHUTDOWN_HEARTBEAT] == 0 || init_heartbeat[MC_HEARTBEAT] == 0 || init_heartbeat[IO_HEARTBEAT] == 0)
 	{
 	}
 	else
@@ -486,7 +490,7 @@ void HeartbeatsNoRstFunc() {
 
 void AttemptRstFunc() {
 	send_torque = 0;
-
+	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_RESET);
 	if (HAL_GetTick() - ignore_nr_start_time >= STOP_IGNORING_NR_LINE) {
 		ignore_nr_line = 0;
 	}

@@ -23,7 +23,7 @@
 #define STOP_IGNORING_NR_LINE 3000
 #define MAX_CURRENT 80
 #define PRESSED 1000 // pressed threshold
-#define MAX_THROTTLE_VAL 0xFFFF // ask David + Tyler
+#define MAX_THROTTLE_VAL 0xFFF // ask David + Tyler
 #define RESET_START 500;
 #define RESET_FLT_CNT 100;
 
