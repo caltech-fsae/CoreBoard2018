@@ -170,7 +170,7 @@ void DecrementHeartbeats() {
 	// decrement all elements of heart beat array
 		heartbeat_counter[BMS_HEARTBEAT]--;
 		heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
-		//heartbeat_counter[MC_HEARTBEAT]--;
+		heartbeat_counter[MC_HEARTBEAT]--;
 		heartbeat_counter[IO_HEARTBEAT]--;
 }
 
