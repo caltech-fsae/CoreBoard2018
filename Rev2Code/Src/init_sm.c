@@ -224,7 +224,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_APPS_FLT,             HEARTBEATS_NO_RST,  &send_FLT_CAN);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_BSE_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_AMS_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
-	    AddEvent(sm, HEARTBEATS_NO_RST, E_BOARDS_LIVE,          PRECHARGE_READY,    &do_nothing); // ????
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_BOARDS_LIVE,          NO_RST_FAULT,    &do_nothing);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_CLR_RST_FLT,          HEARTBEATS_NO_RST,  &do_nothing);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_PRECHARGE_FINISHED,   HEARTBEATS_NO_RST,  &do_nothing);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_HEARTBEATS_FLT,       HEARTBEATS_NO_RST,  &do_nothing);
@@ -248,5 +248,5 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, ATTEMPT_RST, E_CLR_RST_FLT,          ATTEMPT_RST,  &do_nothing);
 	    AddEvent(sm, ATTEMPT_RST, E_PRECHARGE_FINISHED,   ATTEMPT_RST,  &do_nothing);
 	    AddEvent(sm, ATTEMPT_RST, E_HEARTBEATS_FLT,       ATTEMPT_RST,  &do_nothing);
-	    AddEvent(sm, ATTEMPT_RST, E_CLR_NO_RST_FLT,       PRECHARGE_READY,  &reset_ignore_nr_line);
+	    AddEvent(sm, ATTEMPT_RST, E_CLR_NO_RST_FLT,       WAIT_DRIVER,  &reset_ignore_nr_line);
 }

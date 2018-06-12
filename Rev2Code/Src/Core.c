@@ -170,7 +170,7 @@ void DecrementHeartbeats() {
 	// decrement all elements of heart beat array
 		heartbeat_counter[BMS_HEARTBEAT]--;
 		heartbeat_counter[SHUTDOWN_HEARTBEAT]--;
-		heartbeat_counter[MC_HEARTBEAT]--;
+		//heartbeat_counter[MC_HEARTBEAT]--;
 		heartbeat_counter[IO_HEARTBEAT]--;
 }
 
@@ -390,7 +390,7 @@ void WaitHeartbeatsFunc() {
 	}
 	else
 	{
-		WriteAUXLED(3, 1);
+		//WriteAUXLED(3, 1);
 		RunEvent(&sm, E_BOARDS_LIVE);
 	}
 	CheckHeartbeats();
@@ -489,6 +489,7 @@ void HeartbeatsNoRstFunc() {
 }
 
 void AttemptRstFunc() {
+	WriteAUXLED(3, 1);
 	send_torque = 0;
 	HAL_GPIO_WritePin(FLT_NR_CTRL_GPIO_Port, FLT_NR_CTRL_Pin, GPIO_PIN_RESET);
 	if (HAL_GetTick() - ignore_nr_start_time >= STOP_IGNORING_NR_LINE) {
@@ -496,7 +497,8 @@ void AttemptRstFunc() {
 	}
 
 	if (!ignore_nr_line) {
-		for(int i = 150; i < 0; i = i - 1){
+		WriteAUXLED(3, 0);
+		for(int i = 150; i > 0; i--){
 			CheckFaultNR();
 	    }
 		RunEvent(&sm, E_CLR_NO_RST_FLT);
