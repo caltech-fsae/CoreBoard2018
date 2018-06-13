@@ -26,6 +26,8 @@ int charge_finish_time = 0;
 int init_heartbeat[4] = {0, 0, 0, 0}; // bms shutdown mc io
 int ignore_nr_line = 0;
 extern int ignore_nr_start_time;
+int is_brake_pressed = 0;
+
 enum Boards {
 	BMS_HEARTBEAT = 0,
 	SHUTDOWN_HEARTBEAT = 1,
@@ -143,9 +145,11 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    		}
 		    		else if ((message & 1) == 1) {
 		    		   throttle_val = 0;
+		    		   is_brake_pressed = 1;
 		    		   RunEvent(&sm, E_PEDAL_BRAKE_PUSHED);
 		    		}
 		    		else {
+		    		   is_brake_pressed = 0;
 		    		   RunEvent(&sm, E_PEDAL_BRAKE_RELEASED);
 		    		}
 		    	}
@@ -223,7 +227,7 @@ int CheckStartButton() {
     	   start_button_counter--; // debouncing
     	}
     	else { // state was different for at least RESET_START calls to this function
-    		if (current == 1) { // button was pressed, need to run start event
+    		if (current == 1 && is_brake_pressed == 1) { // button was pressed, need to run start event
     		   RunEvent(&sm, E_START);
     		   button_pressed = 1; // button was pressed, must be released for at least the debounce time
     		} else {
