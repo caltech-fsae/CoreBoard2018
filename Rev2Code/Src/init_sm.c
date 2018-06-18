@@ -92,8 +92,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, DRIVE, E_PEDAL_BRAKE_RELEASED, DRIVE,        &PEDAL_BRAKE_RELEASED);
 	    AddEvent(sm, DRIVE, E_PEDAL_BRAKE_PUSHED,   DRIVE,        &PEDAL_BRAKE_PUSHED);
 	    AddEvent(sm, DRIVE, E_PWR_80,               DRIVE,        &PWR_80);
-	    AddEvent(sm, DRIVE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    AddEvent(sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, DRIVE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN_R);
+	    AddEvent(sm, DRIVE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN_R);
 	    AddEvent(sm, DRIVE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, DRIVE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, DRIVE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
@@ -113,8 +113,8 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, START_BRAKE, E_PEDAL_BRAKE_RELEASED, WAIT_DRIVER,  &do_nothing);
 	    AddEvent(sm, START_BRAKE, E_PEDAL_BRAKE_PUSHED,   START_BRAKE,  &do_nothing);
 	    AddEvent(sm, START_BRAKE, E_PWR_80,               START_BRAKE,  &PWR_80);
-	    AddEvent(sm, START_BRAKE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN);
-	    AddEvent(sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN);
+	    AddEvent(sm, START_BRAKE, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN_R);
+	    AddEvent(sm, START_BRAKE, E_BPPC_FLT,             RST_FAULT,    &send_FLT_CAN_R);
 	    AddEvent(sm, START_BRAKE, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, START_BRAKE, E_IMD_FLT,              NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, START_BRAKE, E_BSPD_FLT,             NO_RST_FAULT, &send_FLT_CAN);
@@ -134,7 +134,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, PRECHARGE, E_PEDAL_BRAKE_RELEASED, PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PEDAL_BRAKE_PUSHED,   PRECHARGE,  &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_PWR_80,               PRECHARGE,  &do_nothing);
-	    AddEvent(sm, PRECHARGE, E_RST_FLT,              RST_FAULT,    &reset_precharge_timer);  //SEND STOP DRIVE
+	    AddEvent(sm, PRECHARGE, E_RST_FLT,              RST_FAULT,    &reset_precharge_timer_r);  //SEND STOP DRIVE
 	    AddEvent(sm, PRECHARGE, E_BPPC_FLT,             PRECHARGE,    &do_nothing);
 	    AddEvent(sm, PRECHARGE, E_NO_RST_FLT,           NO_RST_FAULT, &reset_precharge_timer); //SEND STOP DRIVE
 	    AddEvent(sm, PRECHARGE, E_IMD_FLT,              PRECHARGE, &do_nothing);
@@ -154,7 +154,7 @@ void initialize_state_machine(StateMachine *sm)
 	    	    AddEvent(sm, PRECHARGE_READY, E_PEDAL_BRAKE_RELEASED, PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PEDAL_BRAKE_PUSHED,   PRECHARGE_READY,  &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_PWR_80,               PRECHARGE_READY,  &do_nothing);
-	    	    AddEvent(sm, PRECHARGE_READY, E_RST_FLT,              RST_FAULT,    &do_nothing);  //SEND STOP DRIVE
+	    	    AddEvent(sm, PRECHARGE_READY, E_RST_FLT,              RST_FAULT,    &send_FLT_CAN_R);  //SEND STOP DRIVE
 	    	    AddEvent(sm, PRECHARGE_READY, E_BPPC_FLT,             PRECHARGE_READY,    &do_nothing);
 	    	    AddEvent(sm, PRECHARGE_READY, E_NO_RST_FLT,           NO_RST_FAULT, &do_nothing); //SEND STOP DRIVE
 	    	    AddEvent(sm, PRECHARGE_READY, E_IMD_FLT,              PRECHARGE_READY, &do_nothing);
@@ -196,7 +196,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, NO_RST_FAULT, E_PEDAL_BRAKE_RELEASED, NO_RST_FAULT,  &PEDAL_BRAKE_RELEASED);
 	    AddEvent(sm, NO_RST_FAULT, E_PEDAL_BRAKE_PUSHED,   NO_RST_FAULT,  &PEDAL_BRAKE_PUSHED);
 	    AddEvent(sm, NO_RST_FAULT, E_PWR_80,               NO_RST_FAULT,  &PWR_80);
-	    AddEvent(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
+	    AddEvent(sm, NO_RST_FAULT, E_RST_FLT,              NO_RST_FAULT,  &send_FLT_CAN_R);
 	    AddEvent(sm, NO_RST_FAULT, E_BPPC_FLT,             NO_RST_FAULT,  &do_nothing);
 	    AddEvent(sm, NO_RST_FAULT, E_NO_RST_FLT,           NO_RST_FAULT,  &send_FLT_CAN);
 	    AddEvent(sm, NO_RST_FAULT, E_IMD_FLT,              NO_RST_FAULT,  &send_FLT_CAN);
@@ -216,7 +216,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_PEDAL_BRAKE_RELEASED, HEARTBEATS_NO_RST,  &PEDAL_BRAKE_RELEASED);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_PEDAL_BRAKE_PUSHED,   HEARTBEATS_NO_RST,  &PEDAL_BRAKE_PUSHED);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_PWR_80,               HEARTBEATS_NO_RST,  &PWR_80);
-	    AddEvent(sm, HEARTBEATS_NO_RST, E_RST_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
+	    AddEvent(sm, HEARTBEATS_NO_RST, E_RST_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN_R);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_BPPC_FLT,             HEARTBEATS_NO_RST,  &do_nothing);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_NO_RST_FLT,           HEARTBEATS_NO_RST,  &send_FLT_CAN);
 	    AddEvent(sm, HEARTBEATS_NO_RST, E_IMD_FLT,              HEARTBEATS_NO_RST,  &send_FLT_CAN);
@@ -236,7 +236,7 @@ void initialize_state_machine(StateMachine *sm)
 	    AddEvent(sm, ATTEMPT_RST, E_PEDAL_BRAKE_RELEASED, ATTEMPT_RST,  &PEDAL_BRAKE_RELEASED);
 	    AddEvent(sm, ATTEMPT_RST, E_PEDAL_BRAKE_PUSHED,   ATTEMPT_RST,  &PEDAL_BRAKE_PUSHED);
 	    AddEvent(sm, ATTEMPT_RST, E_PWR_80,               ATTEMPT_RST,  &PWR_80);
-	    AddEvent(sm, ATTEMPT_RST, E_RST_FLT,              ATTEMPT_RST,  &send_FLT_CAN);
+	    AddEvent(sm, ATTEMPT_RST, E_RST_FLT,              ATTEMPT_RST,  &send_FLT_CAN_R);
 	    AddEvent(sm, ATTEMPT_RST, E_BPPC_FLT,             ATTEMPT_RST,  &do_nothing);
 	    AddEvent(sm, ATTEMPT_RST, E_NO_RST_FLT,           NO_RST_FAULT, &send_FLT_CAN);
 	    AddEvent(sm, ATTEMPT_RST, E_IMD_FLT,              ATTEMPT_RST,  &send_FLT_CAN);

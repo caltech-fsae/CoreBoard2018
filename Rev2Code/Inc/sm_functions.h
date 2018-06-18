@@ -41,6 +41,7 @@ static const uint16_t BPPC_FLT        = 0b0000000100000000;
 
 void send_CAN(uint16_t, uint16_t);
 void send_FLT_CAN();
+void send_FLT_CAN_R();
 
 void RESET_FAULTS();
 void END_DRIVE();
@@ -56,6 +57,7 @@ void do_nothing();
 void ExitFault();
 void SetFinishPrecharge();
 void reset_precharge_timer();
+void reset_precharge_timer_r();
 void reset_init_heartbeats();
 void attempt_driver_reset();
 void set_ignore_nr_line();

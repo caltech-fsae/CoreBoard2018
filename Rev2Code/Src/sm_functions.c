@@ -27,6 +27,11 @@ void reset_precharge_timer() {
 	charge_finish_time = 0;
 }
 
+void reset_precharge_timer_r() {
+	charge_finish_time = 0;
+	can_flt_clear = 0;
+}
+
 void StartPrecharge() {
 	if(!precharge_start) {
 		send_CAN(MID_START_DRIVE, 0);
@@ -100,6 +105,20 @@ void send_FLT_CAN()
 	CAN_queue_transmit(&can_msg);
 
 }
+
+void send_FLT_CAN_R()
+{
+	// helper function to send CAN specifically for faults
+	// send_CAN(MID, message); // Don't want to send fault type, just want MC to get 0 torque command
+
+	// sending 0 torque command
+	throttle_val = 0;
+	can_msg_t can_msg;
+	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_TORQUE_COMMAND), 0);
+	CAN_queue_transmit(&can_msg);
+	can_flt_clear = 0;
+}
+
 
 void reset_init_heartbeats()
 {

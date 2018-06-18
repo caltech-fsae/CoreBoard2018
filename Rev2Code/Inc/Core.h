@@ -106,6 +106,8 @@ int charge_finish_time;
 void WriteAUXLED(uint8_t led, uint8_t state);
 void ToggleAUXLED(uint8_t led);
 
+int can_flt_clear;
+
 //STATE FUNCTIONS OH BOY OH BOY ====================================
 void WaitHeartbeatsFunc();
 void WaitDriverFunc();

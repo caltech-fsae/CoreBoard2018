@@ -35,8 +35,6 @@ enum Boards {
 	IO_HEARTBEAT = 3
 };
 
-
-
 void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 {
 	can_msg_t msg;
@@ -64,6 +62,12 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		init_heartbeat[SHUTDOWN_HEARTBEAT] = 1;
 		    		heartbeat_counter[SHUTDOWN_HEARTBEAT] = RESET_HEARTBEAT;
+		    	} else if (type == MID_REQUEST_NR_RESET_CONSENT) {
+		    		if(sm.current_state_ == ATTEMPT_RST) {
+		    			can_msg_t can_msg;
+		    			CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_PROVIDE_NR_RESET_CONSENT), 0);
+		    			CAN_queue_transmit(&can_msg);
+		    		}
 		    	}
 		    	else if (type == MID_FAULT_STATUS)
 		    	{
@@ -113,8 +117,12 @@ void get_CAN() // this is in the scheduler along with mainloop, runs every cycle
 		    	{
 		    		init_heartbeat[IO_HEARTBEAT] = 1;
 		    		heartbeat_counter[IO_HEARTBEAT] = RESET_HEARTBEAT;
-		    	}
-		    	else if (type == MID_BPPC_BSPD)
+		    	} else if (type == MID_FLT_CLEAR) {
+		    		can_flt_clear = 1;
+		    			can_msg_t can_msg;
+		    			CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_FLT_CLEAR_ACK), 0);
+		    			CAN_queue_transmit(&can_msg);
+		    	} else if (type == MID_BPPC_BSPD)
 		    	{
 		    		// message 0b00: 0b0x = BSPD, NR
 		    		//               0bx0 = BPPC, R
@@ -430,13 +438,13 @@ void DriveFunc(){
     PEDAL_ACEL(); // sends MC torque commands
     CheckStartButton();
 }
-void RstFaultFunc(){
+void RstFaultFunc() {
 	charge_finish_time = 0;
 	send_torque = 0;
 	CheckFaultNR();
 	DecrementHeartbeats();
 	CheckHeartbeats();
-	PulledFaultResettable() ? 0 : RunEvent(&sm, E_CLR_RST_FLT);
+	!PulledFaultResettable() && can_flt_clear ? RunEvent(&sm, E_CLR_RST_FLT) : 0;
 	PEDAL_ACEL();
 	send_stop_drive();
 }
@@ -451,7 +459,12 @@ void NoRstFaultFunc(){
     CheckHeartbeats();
 	send_stop_drive();
 	CheckFaultResettable();
-	PEDAL_ACEL();
+	PEDAL_ACEL(); // TODO UMMMMMMM?
+
+	can_msg_t can_msg;
+	CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_FAULT_NR), 0);
+	CAN_queue_transmit(&can_msg);
+
 }
 
 void PrechargeFunc() {
@@ -490,6 +503,11 @@ void HeartbeatsNoRstFunc() {
 	{
 		RunEvent(&sm, E_BOARDS_LIVE);
 	}
+
+			    			can_msg_t can_msg;
+			    			CAN_short_msg(&can_msg, create_ID(BID_CORE, MID_FAULT_NR), 0);
+			    			CAN_queue_transmit(&can_msg);
+
 }
 
 void AttemptRstFunc() {
